@@ -1,4 +1,4 @@
-<link rel="import" href="../l2t-context-menu/l2t-context-menu.html">
+<!--<link rel="import" href="../l2t-context-menu/l2t-context-menu.html">-->
 
 
 <!--
@@ -43,20 +43,6 @@ Element that enables any DOM element to be draggable and resizable.
       transform: translate3d(0, 0, 0);
       -webkit-transform: translate3d(0, 0, 0);
       /*transition: all 0.1s linear;*/
-    }
-
-    /*.dragOverlay {*/
-    /*border: 1px dotted rgb(0, 150, 253);*/
-    /*cursor: move;*/
-    /*display: block;*/
-    /*}*/
-    paper-material {
-      display: inline-block;
-      background: white;
-      box-sizing: border-box;
-      margin: 8px;
-      padding: 16px;
-      border-radius: 2px;
     }
 
     .drag-resize-handlers {
@@ -134,11 +120,11 @@ Element that enables any DOM element to be draggable and resizable.
     }
   </style>
   <template>
-    <l2t-context-menu></l2t-context-menu>
+    <!--<l2t-context-menu id="dragdrop_contextmenu"></l2t-context-menu>-->
     <div id="drag-elastic-band" class="drag-elastic-band"></div>
     <div id="resizable_handlers">
       <template id="selectedelements" is="dom-repeat" items="{{selectedElements}}">
-        <div id="{{item.name}}" class="drag-resize-selected" on-track="ontrack">
+        <div id="{{item.name}}" class="drag-resize-selected" on-track="ontrack" >
           <div class="drag-resize-handlers" data-direction="tl"></div>
           <div class="drag-resize-handlers" data-direction="tm"></div>
           <div class="drag-resize-handlers" data-direction="tr"></div>
@@ -203,6 +189,7 @@ Element that enables any DOM element to be draggable and resizable.
     },
     menuData: [
       {type: "single", description: "Delete", command: "delete"},
+      {type: "single", description: "-", command: "delete"},
       {type: "single", description: "Align", command: "",
         submenu:[
           {type: "single", description: "Left", command: "align-left"},
@@ -352,7 +339,8 @@ Element that enables any DOM element to be draggable and resizable.
     },
     listeners: {
       'tap': 'ontap',
-      'track': 'ontrack'
+      'track': 'ontrack',
+      contextmenu: '_generateMenu'
     },
     /**
      * Set the zoom level. This value is used to make sure
@@ -491,21 +479,6 @@ Element that enables any DOM element to be draggable and resizable.
     ontap: function(event){
       event.stopPropagation();
       event.preventDefault();
-//        var elm = event.target;
-//
-//        if (elm.dataset.direction) {
-//          this.resizeHandle = elm;
-//          if (this.resizeHandle && this.dragstart) {
-//            this.dragstart(elm, this.resizeHandle.dataset.direction);
-//          }
-//        }
-//        else {
-//          this.resizeHandle = null;
-//        }
-//
-//        // Stop mouse selections if we're dragging a handle.
-//        event.preventDefault();
-//        event.stopPropagation();
     },
 
     /**
@@ -542,10 +515,6 @@ Element that enables any DOM element to be draggable and resizable.
         // Clear Out Result
         this.selectedElements = [];
       }
-
-      // Clear Out Value
-//        this.blur();
-
       if ( this.enable && newElement && !newElement.classList.contains('drag-resize-selected') ) {
         // Add With Index Name - Use Polymer so it can see the request
         var elementObj = this._elementAlreadyAdded(newElement);
@@ -555,44 +524,19 @@ Element that enables any DOM element to be draggable and resizable.
         var overlay = this.$$('#'+elementObj.name);
         // Hook
         elementObj.overlay = overlay;
-
-
-        var position = this.position(newElement);
-        var dimension = this.dimension(newElement);
-
+        var position = this.position(newElement.$.node);
+        var dimension = this.dimension(newElement.$.node);
         overlay.style.width = dimension.width + 'px';
         overlay.style.height = dimension.height + 'px';
         overlay.style.left = position.left + 'px';
         overlay.style.top = position.top + 'px';
-
-
-
-//
-//          this.selectedElement = newElement;
-//          console.log("New Focus: ", this, this.selectedElement);
-//
-//          this.margin = {
-//            left: 0, //parseInt(style.marginLeft, 10),
-//            top: 0 //parseInt(style.marginTop, 10),
-//          };
-//
-//          position = this.position(newElement);
-//          dimension = this.dimension(newElement);
-//
-//          this.bbox.elmX = position.left - this.margin.left;
-//          this.bbox.elmY = position.top - this.margin.top;
-//          this.bbox.elmW = dimension.width;
-//          this.bbox.elmH = dimension.height;
-//
-//          // Make sure the styles are correctly set
-//          // this will put the drag-resize ontop of the selected element.
-//          this.updateStyle();
-//
-//          if (this.dragfocus) {
-//            this.dragfocus();
-//          }
+        //
+        // Fire Events
+        //
+        if (this.selectedElements.length == 1) {
+            this.fire('edit-SingleElement', newElement);
+        }
       }
-
     },
 
     /**
@@ -780,11 +724,11 @@ Element that enables any DOM element to be draggable and resizable.
      * @param  {Event} e The `ondragstart` event.
      */
     drag: function(e){
-      if (e.target.dataset.direction) {
-        this.resizeHandle = e.target;
-      } else {
-        this.resizeHandle = null;
-      }
+        if (e.target.dataset.direction) {
+          this.resizeHandle = e.target;
+        } else {
+          this.resizeHandle = null;
+        }
     },
     /**
      * OnDragging event (triggered when dragging an element)
@@ -796,14 +740,15 @@ Element that enables any DOM element to be draggable and resizable.
       var ratio = 1 / this.zoomLevel;
       var ddx = (dragInfo.detail.ddx * ratio) | 0;
       var ddy = (dragInfo.detail.ddy * ratio) | 0;
+      var position;
       var i;
       for ( i = 0; i < this.selectedElements.length; ++i) {
-        var element = this.selectedElements[i].element;
+        var element = this.selectedElements[i].element.$.node;
         var overlay = this.selectedElements[i].overlay;
         if (element) {
           if (this.resizeHandle) {
             var direction = this.resizeHandle.dataset.direction;
-            var position = this.position(element);
+            position = this.position(element);
             this.bbox.elmX = position.left;
             this.bbox.elmY = position.top;
             var dimension = this.dimension(dragInfo.currentTarget);
@@ -814,7 +759,7 @@ Element that enables any DOM element to be draggable and resizable.
             this._updateOverlayAll(element);
           }
           else {
-            var position = this.position(element);
+            position = this.position(element);
             this.bbox.elmX = position.left + element.clientLeft + ddx;
             this.bbox.elmY = position.top + element.clientTop + ddy;
             this._updateOverlay(overlay);
@@ -834,45 +779,70 @@ Element that enables any DOM element to be draggable and resizable.
     attached: function() {
       // Critical to trap mouse movements
       this.async(function() {
-        this.listen(document, 'mousedown', "_doMouseDown");
-        this.listen(document, 'mouseup', "_doMouseUp");
-      })
+        this.listen(this.parentNode, 'mousedown', "_doMouseDown");
+        this.listen(this.parentNode, 'mouseup', "_doMouseUp");
+        this.listen(document, 'contextmenu', "_doContextMenu");
+      });
+
     },
+      _doContextMenu: function(event) {
+          event.stopPropagation();
+          event.preventDefault();
+      },
     _doMouseUp: function(event) {
       event.stopPropagation();
       event.preventDefault();
-      console.log(event);
-      if (event.button == 2) {
+      if ((this.enable == true) && (event.button == 2)) {
         // Otherwise know as right-button click!
-        contextMenu.showMenu(this.menuData,event.target,"single",event, function(command,node){
-          if (command != null) {
-            // Create Mock DataPack device id and offset used by Blockly Commands
-            console.log(command,node);
-          }
-        });
-
+          contextMenu.showMenu(this.menuData,event.target,"single",event, function(command,node){
+              if (command != null) {
+                  // Create Mock DataPack device id and offset used by Blockly Commands
+                  console.log(command,node);
+              }
+          });
       }
     },
     _doMouseDown: function(event) {
-      var element = event.srcElement || event.target;
-      // Check to see if it's one of our supporting classes (little grab boxes etc.)
-      var filteredElements = element.classList.contains('drag-resize-handlers') ||  element.getAttribute('drag-resize') !== null;
-      if(!element.classList.contains('paper-drag-drop')){
-        if(filteredElements){
-          if (event.ctrlKey) {
-            // Add to list
-            this.focus(element,false);
+        var i, element, firstElement;
+        for (i = 0; i < event.path.length; i++) {
+            if (i == 0) {
+                firstElement = event.path[0];
+            }
+            if (event.path[i].Glyph != undefined) {
+                element = event.path[i];
+                break;
+            }
+        }
+        // Check if first Element is drag-resize-handler - if so ignore as object
+        if (firstElement.classList.contains('drag-resize-handlers') ||  firstElement.classList.contains('drag-resize-selected')) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
+        // If searching back clicked on a none Sams Object.  Drop.
+        if (element == undefined) {
+            this.selectedElements = [];
+        } else {
+
+          var filteredElements = element.classList.contains('drag-resize-handlers') ||  element.getAttribute('drag-resize') !== null;
+          if(!element.classList.contains('paper-drag-drop')){
+              if(filteredElements){
+                  event.stopPropagation();
+                  event.preventDefault();
+                  if (event.ctrlKey) {
+                      // Add to list
+                      this.focus(element,false);
+                  } else {
+                      // Replace List
+                      this.focus(element,true);
+                  }
+              }
+              else {
+                  // Clear All Selected Elements
+                  this.selectedElements = [];
+              }
           } else {
-            // Replace List
-            this.focus(element,true);
-          }
-        }
-        else {
-          // Clear All Selected Elements
-          this.selectedElements = [];
-        }
-      } else {
-        // Already Selected Thus....
+              // Already Selected Thus....
 //              if (event.ctrlKey) {
 //                // Add to list
 //                this.focus(element,false);
@@ -881,12 +851,16 @@ Element that enables any DOM element to be draggable and resizable.
 //                this.selectedElements = [];
 //                this.focus(element,true);
 //              }
+          }
       }
-      event.stopPropagation();
-      event.preventDefault();
+//      event.stopPropagation();
+//      event.preventDefault();
     },
-    _generateMenu: function() {
-
+    _generateMenu: function(e) {
+        // Simply to block Menu
+        e.preventDefault();
+//        event.stopPropagation();
+//        event.preventDefault();
     },
     _updateOverlay: function(pElement) {
       pElement.style.left = this.bbox.elmX + 'px';
@@ -911,6 +885,20 @@ Element that enables any DOM element to be draggable and resizable.
     },
     _parseIntDef: function(value) {
       return parseInt(value,10) || 0;
+    },
+    SetPropertyEditor: function(propertyEditor) {
+        if (typeof propertyEditor == 'function') {
+            this.propertyEditor = propertyEditor;
+        }
+    },
+    Disable: function() {
+        this.enable = false;
+        this.selectedElements = [];
+        this.blur(true);
+    },
+    EnableEdit: function() {
+        this.enable = true;
     }
   });
+
 </script>
