@@ -4,8 +4,7 @@
   "main": "paper-drag-drop.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0",
-    "jas-menu-context": "homerjonathan/jas-menu-context",
-    "l2t-context-menu": "homerjonathan/l2t-context-menu"
+    "jas-menu-context": "homerjonathan/jas-context-menu"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
