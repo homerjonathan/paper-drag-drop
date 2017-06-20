@@ -3,12 +3,12 @@
   "description": "New Paper Drag and Drop - Updating one that works with Polymer &lt; 1.0 to the latest version.",
   "main": "paper-drag-drop.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.4.0",
+    "polymer": "Polymer/polymer#^2.0.0",
     "jas-menu-context": "homerjonathan/jas-context-menu"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
-    "web-component-tester": "^4.0.0"
+    "web-component-tester": "^6.0.0"
   }
 }
