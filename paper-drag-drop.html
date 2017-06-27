@@ -1,3 +1,4 @@
+<link rel="import" href="../polymer/polymer-element.html">
 <!--
 Copyright (c) 2014 Wassim Chegham. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
@@ -14,9 +15,9 @@ Element that enables any DOM element to be draggable and resizable.
 
     <drag-resize></drag-resize>
 
-@element drag-resize
+@element paper-drag-drop
 @blurb Element that enables any DOM element to be draggable and resizable.
-@status alpha
+@status beta
 @homepage https://github.io/manekinekko/drag-resize
 @demo demo/index.html
 -->
@@ -28,7 +29,6 @@ Element that enables any DOM element to be draggable and resizable.
       display: none;
       position: absolute;
     }
-
     .drag-resize-selected {
       border: 1px dotted rgb(0, 150, 253);
       cursor: move;
@@ -39,9 +39,7 @@ Element that enables any DOM element to be draggable and resizable.
       z-index: 999;
       transform: translate3d(0, 0, 0);
       -webkit-transform: translate3d(0, 0, 0);
-      /*transition: all 0.1s linear;*/
     }
-
     .drag-resize-handlers {
       position: absolute;
       width: 5px;
@@ -52,7 +50,6 @@ Element that enables any DOM element to be draggable and resizable.
       transition: all 0.1s linear;
       opacity: 1;
     }
-
     :host(.drag-resize-selected) .drag-resize-handlers {
       opacity: 1;
     }
@@ -116,7 +113,7 @@ Element that enables any DOM element to be draggable and resizable.
     <div id="drag-elastic-band" class="drag-elastic-band"></div>
     <div id="resizable_handlers">
       <template id="selectedelements" is="dom-repeat" items="{{selectedElements}}">
-        <div id="{{item.name}}" class="drag-resize-selected" on-track="ontrack" >
+        <div id="{{item.name}}" class="drag-resize-selected" on-track="_eventOnTrack" >
           <div class="drag-resize-handlers" data-direction="tl"></div>
           <div class="drag-resize-handlers" data-direction="tm"></div>
           <div class="drag-resize-handlers" data-direction="tr"></div>
@@ -135,17 +132,14 @@ Element that enables any DOM element to be draggable and resizable.
 -->
 <script>
 
-    class PaperDragDrop extends Polymer.Element {
+    class PaperDragDrop extends Polymer.GestureEventListeners(Polymer.Element) {
         static get is() { return 'paper-drag-drop'; }
-        static get properties() {
-            return object.assign(this.baseProperties,
-                {
+        static get properties() { return {
                     selectedElements: {
                         type: Array,
                         notify: true,
                         value: []
                     },
-
                     aspectRatio: {
                         /**
                          * `aspectRatio` is a property that preserves the aspectRatio.
@@ -156,28 +150,6 @@ Element that enables any DOM element to be draggable and resizable.
                          */
                         type: Boolean,
                         value: false
-                    },
-                    allowBlur: {
-                        /**
-                         * `allowBlur` is the attributes that allows automatic blur onclick.
-                         *
-                         * @property allowBlur
-                         * @type bool
-                         * @default true
-                         */
-                        type: Boolean,
-                        value: true
-                    },
-                    /**
-                     * `zIndex` is the highest Z-Index allocated.
-                     *
-                     * @property zIndex
-                     * @type number
-                     * @default 1
-                     */
-                    zIndex: {
-                        type: Number,
-                        value: 1
                     },
                     /**
                      * `minWidth` is the minimum pixel width of the element.
@@ -190,7 +162,6 @@ Element that enables any DOM element to be draggable and resizable.
                         type: Number,
                         value: 10
                     },
-
                     /**
                      * `minHeight` is the minimum pixel height of the element.
                      *
@@ -278,9 +249,10 @@ Element that enables any DOM element to be draggable and resizable.
                         value: "drag-resize",
                         reflectToAttribute: true
                     }
-                });
+                }
         }
         constructor() {
+            super();
             this.selectedElement = null;
             this.resizeHandle = null;
             this.enable = true;
@@ -313,37 +285,23 @@ Element that enables any DOM element to be draggable and resizable.
                     ]
                 }
             ];
+            this._Bind_EventMouseDown = this._EventMouseDown.bind(this);
+            this._Bind_EventMouseUp = this._EventMouseUp.bind(this);
+            this._Bind_EventContextMenu = this._EventContextMenu.bind(this);
         }
-    // add properties and methods on the element's prototype
-//
-//    listeners: {
-//      'tap': 'ontap',
-//      'track': 'ontrack',
-//      contextmenu: '_generateMenu'
-//    },
-      /**
-       * Set the zoom level. This value is used to make sure
-       * the resizable component is always visible and usable
-       * when the user zoom in.
-       *
-       * @method setZoom
-       * @param {Number} zoom values from 0.1 to 2
-       */
-      setZoom(zoom) {
-        this.zoomLevel = zoom;
-
-        if (zoom < 0.6) {
-          this.zoomRatio = 1/zoom;
-          this.displayHandlers(['bm', 'tm', 'mr', 'ml']);
-          this.style.border = '0 none';
+        connectedCallback() {
+            super.connectedCallback();
+            // Critical to trap mouse movements
+            document.addEventListener('mousedown', this._Bind_EventMouseDown);
+            document.addEventListener('mouseup', this._Bind_EventMouseUp);
+            document.addEventListener('contextmenu', this._Bind_EventContextMenu);
         }
-        else {
-          this.zoomRatio = 1;
-          this.displayHandlers();
-          this.style.border = '';
+        disconnectedCallback() {
+            super.disconnectedCallback();
+            document.removeEventListener('mousedown', this._Bind_EventMouseDown);
+            document.removeEventListener('mouseup', this._Bind_EventMouseUp);
+            document.removeEventListener('contextmenu', this._Bind_EventContextMenu);
         }
-      }
-
       /**
        * Toggle the debug info tooltip
        *
@@ -351,16 +309,6 @@ Element that enables any DOM element to be draggable and resizable.
        */
       toggleDebugInfo(){
         this.$.debug_info.classList.toggle('hidden');
-      }
-      /**
-       * This method returns the floor value from a decimal value.
-       *
-       * @method ToFloor
-       * @param {Number} value The decimal value to compute.
-       * @return {Number} the floor value.
-       */
-      ToFloor(value) {
-        return value | 0;
       }
 
       /**
@@ -370,17 +318,13 @@ Element that enables any DOM element to be draggable and resizable.
        * @param {Array} filters An array of the handlers to show. If the array is empty or not provided, then all the handlers are shown.
        */
       displayHandlers(filters){
-
         var handlersContainer = this.$.resizable_handlers;
         var handlers = [].slice.call(handlersContainer.querySelectorAll('[data-direction]'));
-
         if(filters && filters.length>0){
-
           // first, hide all
           handlers.forEach(function(handler, index, self){
             handler.style.visibility = 'hidden';
           });
-
           // show filtered only
           filters.map(function(filter, index, self){
             var dom = handlersContainer.querySelector('[data-direction="'+filter+'"]');
@@ -389,7 +333,6 @@ Element that enables any DOM element to be draggable and resizable.
             }
             return dom;
           });
-
         }
         else {
           // show all
@@ -398,53 +341,6 @@ Element that enables any DOM element to be draggable and resizable.
           });
         }
       }
-
-      /**
-       * Adgjusts the font size of the resized element.
-       *
-       * @method adjustFontSize
-       * @param  {DOMElement} elem The element whose font size should be adjusted.
-       */
-      adjustFontSize(elem){
-        var compressor = 3.5;
-        var minFontSize = 8;
-        var maxFontSize = 100;
-        var val = elem.getBoundingClientRects().width / (compressor*10);
-        elem.style.fontSize = Math.max(Math.min(val, parseFloat(maxFontSize)), parseFloat(minFontSize));
-      }
-      /**
-       * Extra callbacks usefull when resizing the element.
-       *
-       * @method dragfocus
-       */
-      dragfocus() {}
-      /**
-       * Extra callbacks useful when resizing the element.
-       *
-       * @method dragstart
-       */
-      dragstart() {}
-      /**
-       * Extra callbacks useful when resizing the element.
-       *
-       * @method dragmove
-       */
-      dragmove() {}
-
-      /**
-       * Extra callbacks useful when resizing the element.
-       *
-       * @method dragend
-       */
-      dragendn() {}
-
-      /**
-       * Extra callbacks useful when resizing the element.
-       *
-       * @method dragblur
-       */
-      dragblur() {}
-
       /**
        * The `ontap` handler.
        *
@@ -456,13 +352,10 @@ Element that enables any DOM element to be draggable and resizable.
         event.preventDefault();
       }
 
-      /**
-       * The `ontrack` handler.
-       *
-       * @method ontrack
-       * @param  {Event} event The `ontrack` event.
-       */
-      ontrack(e){
+        //
+        // Internal On Track Event
+        //
+       _eventOnTrack(e) {
         switch(e.detail.state) {
           case 'start':
             this.drag(e);
@@ -471,7 +364,6 @@ Element that enables any DOM element to be draggable and resizable.
             this.dragging(e);
             break;
           case 'end':
-            console.log("End Dragging!");
             break;
         }
         event.stopPropagation();
@@ -495,7 +387,7 @@ Element that enables any DOM element to be draggable and resizable.
           // Force immediate render.  No performance issues as only human speed of clicking
           this.$.selectedelements.render();
           // Not the most elegant but...grab overlay
-          var overlay = this.$$('#'+elementObj.name);
+          var overlay = this.shadowRoot.querySelector('#'+elementObj.name);
           // Hook
           elementObj.overlay = overlay;
           var position = this.position(newElement.$.node);
@@ -747,20 +639,11 @@ Element that enables any DOM element to be draggable and resizable.
           this.displayHandlers();
         }
       }
-      attached() {
-        // Critical to trap mouse movements
-        this.async(function() {
-          this.listen(this.parentNode, 'mousedown', "_doMouseDown");
-          this.listen(this.parentNode, 'mouseup', "_doMouseUp");
-          this.listen(document, 'contextmenu', "_doContextMenu");
-        });
-
-      }
-      _doContextMenu(event) {
+      _EventContextMenu(event) {
           event.stopPropagation();
           event.preventDefault();
       }
-      _doMouseUp(event) {
+      _EventMouseUp(event) {
         event.stopPropagation();
         event.preventDefault();
         if ((this.enable == true) && (event.button == 2)) {
@@ -773,7 +656,7 @@ Element that enables any DOM element to be draggable and resizable.
             });
         }
       }
-      _doMouseDown(event) {
+      _EventMouseDown(event) {
           var i, element, firstElement;
           for (i = 0; i < event.path.length; i++) {
               if (i == 0) {
@@ -855,6 +738,11 @@ Element that enables any DOM element to be draggable and resizable.
       _parseIntDef(value) {
         return parseInt(value,10) || 0;
       }
+        /**
+         * Hook Paper Drag Drop into your Property Editor.
+         *
+         *
+         */
       SetPropertyEditor(propertyEditor) {
           if (typeof propertyEditor == 'function') {
               this.propertyEditor = propertyEditor;
@@ -866,7 +754,6 @@ Element that enables any DOM element to be draggable and resizable.
       DisableEdit() {
           this.selectedElements = [];
           this.enable = false;
-//          this.blur(true);
       }
       /**
        * `EnableEdit` Used to Switch On Edit Paper Drag Mode
@@ -874,6 +761,15 @@ Element that enables any DOM element to be draggable and resizable.
       EnableEdit() {
           this.enable = true;
       }
+
+        /**
+         * Fire - To replace Polymer 1.x version that disappeared!
+         * @param name of event
+         * @param detail
+         */
+        fire(name,detail) {
+            document.dispatchEvent(new CustomEvent(name, {detail: detail}));
+        }
   }
   customElements.define(PaperDragDrop.is, PaperDragDrop);
 
