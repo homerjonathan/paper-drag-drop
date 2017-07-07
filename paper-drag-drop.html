@@ -364,6 +364,7 @@ Element that enables any DOM element to be draggable and resizable.
             this.dragging(e);
             break;
           case 'end':
+            this.finishedDragging(e);
             break;
         }
         event.stopPropagation();
@@ -620,6 +621,7 @@ Element that enables any DOM element to be draggable and resizable.
               this.resizeHandleDrag(ddx, ddy, direction, element);
               this._updateOverlayAll(overlay);
               this._updateOverlayAll(element);
+              this._updateGlyphAll(this.selectedElements[i].element);
             }
             else {
               position = this.position(element);
@@ -627,10 +629,21 @@ Element that enables any DOM element to be draggable and resizable.
               this.bbox.elmY = position.top + element.clientTop + ddy;
               this._updateOverlay(overlay);
               this._updateOverlay(element);
+              this._updateGlyph(this.selectedElements[i].element);
             }
           }
         }
       }
+
+      finishedDragging(dragInfo) {
+            //
+            // Fire Events
+            //
+            if (this.selectedElements.length == 1) {
+                this.fire('edit-SingleElement', this.selectedElements[0].element);
+            }
+      }
+
       aspectRatioChanged(){
         if(this.aspectRatio === true){
           this.displayHandlers(['br']);
@@ -662,7 +675,7 @@ Element that enables any DOM element to be draggable and resizable.
               if (i == 0) {
                   firstElement = event.path[0];
               }
-              if (event.path[i].Glyph != undefined) {
+              if (event.path[i].$ != undefined) {
                   element = event.path[i];
                   break;
               }
@@ -723,6 +736,16 @@ Element that enables any DOM element to be draggable and resizable.
         pElement.style.height = this.bbox.elmH + 'px';
         pElement.style.left = this.bbox.elmX + 'px';
         pElement.style.top = this.bbox.elmY + 'px';
+      }
+      _updateGlyph(pElement) {
+          pElement.Glyph.x = this.bbox.elmX + 'px';
+          pElement.Glyph.y = this.bbox.elmY + 'px';
+      }
+      _updateGlyphAll(pElement) {
+          pElement.Glyph.x = this.bbox.elmX + 'px';
+          pElement.Glyph.y = this.bbox.elmY + 'px';
+          pElement.Glyph.width = this.bbox.elmW + 'px';
+          pElement.Glyph.height = this.bbox.elmH + 'px';
       }
       _elementAlreadyAdded(newElement) {
         var i=0;
