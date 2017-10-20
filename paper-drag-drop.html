@@ -274,14 +274,38 @@ Element that enables any DOM element to be draggable and resizable.
                     y: 0
                 }
             };
+            // Can Be Automated this....
+            this.menuAddObjects = [
+              {type: "add", description: "Add Label", command: "add-label"},
+              {type: "add", description: "Add Image", command: "add-image"},
+              {type: "add", description: "Add Button", command: "add-button"}
+            ];
+
             this.menuData = [
-                {type: "single", description: "Delete", command: "delete"},
-                {type: "single", description: "-", command: "delete"},
+                {type: "add", description: "Add", command: "edit-add",submenu: this.menuAddObjects},
+                {type: "object", description: "Delete", command: "edit-delete"},
+                {type: "clipboard", description: "Copy", command: "edit-copy"},
+                {type: "clipboard", description: "Cut", command: "edit-cut"},
+                {type: "clipboard", description: "Paste", command: "edit-paste"},
+                {type: "undo", description: "Undo", command: "edit-undo"},
+                {type: "single", description: "-", command: ""},
                 {
                     type: "single", description: "Align", command: "",
                     submenu: [
-                        {type: "single", description: "Left", command: "align-left"},
-                        {type: "single", description: "Right", command: "align-right"}
+                        {type: "single", description: "Left", command: "edit-align-left"},
+                        {type: "single", description: "Right", command: "edit-align-right"},
+                        {type: "single", description: "Top", command: "edit-align-top"},
+                        {type: "single", description: "Bottom", command: "edit-align-bottom"}
+                    ]
+                },
+                {
+                    type: "single", description: "Resize", command: "", icon:"",
+                    submenu: [
+                        {type: "single", description: "Grow to Largest Width", command: "edit-resize-width-grow"},
+                        {type: "single", description: "Shrink to Smallest Width", command: "align-resize-width-shrink"},
+                        {type: "single", description: "Grow to Largest Height", command: "edit-resize-height-grow"},
+                        {type: "single", description: "Shrink to Smallest Height", command: "align-resize-height-shrink"}
+
                     ]
                 }
             ];
