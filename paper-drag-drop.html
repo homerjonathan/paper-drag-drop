@@ -157,6 +157,11 @@ Element that enables any DOM element to be draggable and resizable.
                         notify: true,
                         value: []
                     },
+                    menuAddObjects: {
+                        type: Array,
+                        notify: true,
+                        observer: "_doMenu"
+                    },
                     aspectRatio: {
                         /**
                          * `aspectRatio` is a property that preserves the aspectRatio.
@@ -298,6 +303,15 @@ Element that enables any DOM element to be draggable and resizable.
               {type: "add", description: "Add Button", command: "add-button"}
             ];
 
+            this._doMenu();
+
+            this._Bind_EventMouseDown = this._EventMouseDown.bind(this);
+            this._Bind_EventMouseUp = this._EventMouseUp.bind(this);
+            this._Bind_EventContextMenu = this._EventContextMenu.bind(this);
+            this._Bind_EventRefreshOverlays = this._EventRefreshOverlays.bind(this);
+        }
+
+        _doMenu() {
             this.menuData = [
                 {
                     type: "align", description: "Align", command: "",
@@ -328,10 +342,6 @@ Element that enables any DOM element to be draggable and resizable.
                 {type: "delete", description: "-", command: ""},
                 {type: "delete", description: "Delete", command: "edit-delete",icon: "paperdragdrop:delete"}
             ];
-            this._Bind_EventMouseDown = this._EventMouseDown.bind(this);
-            this._Bind_EventMouseUp = this._EventMouseUp.bind(this);
-            this._Bind_EventContextMenu = this._EventContextMenu.bind(this);
-            this._Bind_EventRefreshOverlays = this._EventRefreshOverlays.bind(this);
         }
         connectedCallback() {
             super.connectedCallback();
@@ -819,6 +829,7 @@ Element that enables any DOM element to be draggable and resizable.
                     // Clear All Selected Elements
                     if (!this._checkForIgnore(event)) {
                         this.selectedElements = [];
+                        this.fire('edit-Cancel');
                     }
                 }
             } else {
