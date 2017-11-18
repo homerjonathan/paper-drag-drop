@@ -333,7 +333,7 @@ Element that enables any DOM element to be draggable and resizable.
 
                     ]
                 },
-                {type: "add", description: "Add", command: "edit-add",submenu: this.menuAddObjects},
+                {type: "add", description: "Add", command: "",submenu: this.menuAddObjects},
                 {type: "add", description: "-", command: ""},
                 {type: "clipboard", description: "Copy", command: "edit-copy", icon: "paperdragdrop:content-copy"},
                 {type: "clipboard", description: "Cut", command: "edit-cut",icon: "paperdragdrop:content-cut"},
@@ -698,9 +698,9 @@ Element that enables any DOM element to be draggable and resizable.
         // Fire Events
         //
         if (this.selectedElements.length == 1) {
-            this.fire('edit-MoveResizeSingleElement', this.selectedElements[0].element);
+            this.fire('edit-MovingResizeSingleElement', this.selectedElements[0].element);
         } else {
-            this.fire('edit-MoveResizeMultiElement', this.selectedElements);
+            this.fire('edit-MovingResizeMultiElement', this.selectedElements);
         }
       }
 
@@ -709,9 +709,9 @@ Element that enables any DOM element to be draggable and resizable.
             // Fire Events
             //
             if (this.selectedElements.length == 1) {
-                this.fire('edit-MoveResizeSingleElement', this.selectedElements[0].element, "done");
+                this.fire('edit-MoveResizeSingleElement', this.selectedElements[0].element);
             } else {
-                this.fire('edit-MoveResizeMultiElement', this.selectedElements, "done");
+                this.fire('edit-MoveResizeMultiElement', this.selectedElements);
             }
       }
 
@@ -752,9 +752,9 @@ Element that enables any DOM element to be draggable and resizable.
           } else if (event.path[0].classList.contains('Edit')) {
               // Base Page - So Can add Items or do page functions
               console.log("Base Selected")
-              contextMenu.showMenu(this.menuData, event.target, ["add","undo","clipboard-paste"], event, function(command,node) {
+              contextMenu.showMenu(this.menuData, event.target, ["add","undo","clipboard-paste"], event, function(command,node, sub) {
                   if (command != null) {
-                      _this.fire(command,null);
+                      _this.fire(command,sub);
                       console.log(command,node);
                   }
               });
