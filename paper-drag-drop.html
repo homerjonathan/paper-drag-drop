@@ -43,13 +43,15 @@ Element that enables any DOM element to be draggable and resizable.
       }
       .drag-resize-handlers {
         position: absolute;
-        width: 5px;
-        height: 5px;
+        width: 8px;
+        height: 8px;
         font-size: 1px;
         background: rgb(0, 150, 253);
         -webkit-transition: all 0.1s linear;
         transition: all 0.1s linear;
         opacity: 1;
+        border-radius: 5px;
+        border: 0px solid black;
       }
       :host(.drag-resize-selected) .drag-resize-handlers {
         opacity: 1;
@@ -57,6 +59,7 @@ Element that enables any DOM element to be draggable and resizable.
       .drag-resize-handlers:hover {
         transform: scale(1.6); /*chrome*/
         -webkit-transform: scale(1.6); /*nodewebkit*/
+        border: 1px solid black;
       }
       /*
        Individual corner classes - required for resize support.
@@ -506,6 +509,35 @@ Element that enables any DOM element to be draggable and resizable.
                 left: offset.left - 0
             };
         }
+        position2(element){
+            var offset = this.offset2(element);
+            return {
+                top: offset.top - 0,
+                left: offset.left - 0
+            };
+        }
+        position3(element){
+            var offset = this.offset3(element);
+            return {
+                top: offset.top - 0,
+                left: offset.left - 0
+            };
+        }
+        offset3(element){
+            var docElem;
+            var o = {
+                top: 0,
+                left: 0
+            };
+            if(element) {
+                docElem = element.ownerDocument.documentElement;
+                o = {
+                    top: element.offsetTop - docElem.clientTop,
+                    left: element.offsetLeft - docElem.clientLeft
+                }
+            }
+            return o;
+        }
         /**
          * A convenient function that computes the correct offset position of an element.
          *
@@ -521,26 +553,75 @@ Element that enables any DOM element to be draggable and resizable.
             };
 
             if(element) {
-                // Get Shadow CSS of Host to get Internal Margins.
-                if (element.root == null) {
-                    docElem = element.ownerDocument.documentElement;
-                    o = {
-                        top: element.offsetTop - docElem.clientTop,
-                        left: element.offsetLeft - docElem.clientLeft
-                    }
-                } else {
-                    var computedStyle = window.getComputedStyle(element.root.host);
-                    var iMarginLeft = computedStyle.marginLeft.replace("px", "");
-                    var iMarginTop = computedStyle.marginTop.replace("px", "");
-                    docElem = element.ownerDocument.documentElement;
-                    o = {
-                        top: element.offsetTop - docElem.clientTop - iMarginTop,
-                        left: element.offsetLeft - docElem.clientLeft - iMarginLeft
-                    }
+                // Get Computed Style
+                var computedStyle = this.getComputedStyle(element);
+                var iMarginLeft = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.borderLeftWidth.replace("px", ""))
+                                + Number(computedStyle.paddingLeft.replace("px", ""));
+                var iMarginTop = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.borderTopWidth.replace("px", ""))
+                               + Number(computedStyle.paddingTop.replace("px", ""));
+                docElem = element.ownerDocument.documentElement;
+                o = {
+                    top: element.offsetTop - docElem.clientTop - iMarginTop,
+                    left: element.offsetLeft - docElem.clientLeft - iMarginLeft
                 }
+                // if (element.root == null) {
+                //     docElem = element.ownerDocument.documentElement;
+                //     o = {
+                //         top: element.offsetTop - docElem.clientTop,
+                //         left: element.offsetLeft - docElem.clientLeft
+                //     }
+                // } else {
+                //     var computedStyle = window.getComputedStyle(element.root.host);
+                //     var iMarginLeft = computedStyle.marginLeft.replace("px", "") + computedStyle.paddingLeft.replace("px", "") ;
+                //     var iMarginTop = computedStyle.marginTop.replace("px", "");
+                //     docElem = element.ownerDocument.documentElement;
+                //     o = {
+                //         top: element.offsetTop - docElem.clientTop - iMarginTop,
+                //         left: element.offsetLeft - docElem.clientLeft - iMarginLeft
+                //     }
+                // }
             }
             return o;
         }
+        offset2(element){
+            var docElem;
+            var o = {
+                top: 0,
+                left: 0
+            };
+
+            if(element) {
+                // Get Shadow CSS of Host to get Internal Margins.
+                var computedStyle = this.getComputedStyle(element);
+                var iMarginLeft = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.borderLeftWidth.replace("px", ""));
+                    // + Number(computedStyle.paddingLeft.replace("px", ""));
+                var iMarginTop = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.borderTopWidth.replace("px", ""));
+                    // + Number(computedStyle.paddingTop.replace("px", ""));
+                docElem = element.ownerDocument.documentElement;
+                o = {
+                    top: element.offsetTop - docElem.clientTop - iMarginTop,
+                    left: element.offsetLeft - docElem.clientLeft - iMarginLeft
+                }
+                // if (element.root == null) {
+                //     docElem = element.ownerDocument.documentElement;
+                //     o = {
+                //         top: element.offsetTop - docElem.clientTop,
+                //         left: element.offsetLeft - docElem.clientLeft
+                //     }
+                // } else {
+                //     var computedStyle = window.getComputedStyle(element.root.host);
+                //     var iMarginLeft = computedStyle.marginLeft.replace("px", "") + computedStyle.paddingLeft.replace("px", "") ;
+                //     var iMarginTop = computedStyle.marginTop.replace("px", "");
+                //     docElem = element.ownerDocument.documentElement;
+                //     o = {
+                //         top: element.offsetTop - docElem.clientTop - iMarginTop,
+                //         left: element.offsetLeft - docElem.clientLeft - iMarginLeft
+                //     }
+                // }
+            }
+            return o;
+        }
+
         /**
          * A convenient function that computes the correct dimension of an element.
          *
@@ -557,20 +638,37 @@ Element that enables any DOM element to be draggable and resizable.
                 return element.getBoundingClientRect();
             }
             else {
-                if (element.root == null) {
-                    return {
-                        width: element.clientWidth,
-                        height: element.clientHeight
-                    }
-                } else {
-                    var computedStyle = window.getComputedStyle(element.root.host);
-                    var iMarginWidth = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.marginRight.replace("px", ""));
-                    var iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""));
-                    return {
-                        width: element.clientWidth  + iMarginWidth,
-                        height: element.clientHeight + iMarginHeight
-                    }
+                var computedStyle = this.getComputedStyle(element);
+                var iMarginWidth = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.marginRight.replace("px", ""))
+                + Number(computedStyle.borderLeftWidth.replace("px", "")) + Number(computedStyle.borderRightWidth.replace("px", ""))
+                + Number(computedStyle.paddingLeft.replace("px", "")) + Number(computedStyle.paddingRight.replace("px", ""));
+                var iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""))
+                    + Number(computedStyle.borderTopWidth.replace("px", "")) + Number(computedStyle.borderBottomWidth.replace("px", ""))
+                    + Number(computedStyle.paddingTop.replace("px", "")) + Number(computedStyle.paddingBottom.replace("px", ""));
+                // var iMarginWidth = Number(computedStyle.marginLeft.replace("px", ""))
+                //     + Number(computedStyle.borderLeftWidth.replace("px", ""))
+                //     + Number(computedStyle.paddingLeft.replace("px", "")) ;
+                // var iMarginHeight = Number(computedStyle.marginTop.replace("px", ""))
+                //     + Number(computedStyle.borderTopWidth.replace("px", ""))
+                //     + Number(computedStyle.paddingTop.replace("px", "")) ;
+                return {
+                    width: element.clientWidth  + iMarginWidth,
+                    height: element.clientHeight + iMarginHeight
                 }
+                // if (element.root == null) {
+                //     return {
+                //         width: element.clientWidth,
+                //         height: element.clientHeight
+                //     }
+                // } else {
+                //     var computedStyle = window.getComputedStyle(element.root.host);
+                //     var iMarginWidth = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.marginRight.replace("px", ""));
+                //     var iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""));
+                //     return {
+                //         width: element.clientWidth  + iMarginWidth,
+                //         height: element.clientHeight + iMarginHeight
+                //     }
+                // }
             }
         }
         /**
@@ -588,31 +686,32 @@ Element that enables any DOM element to be draggable and resizable.
             // element doesn't go under minimum size, and doesn't go beyond its boundary.
             var computedStyle , iMarginWidth,iMarginHeight, minimumHeight,minimumWidth;
 
-            if(element) {
-                // Get Shadow CSS of Host to get Internal Margins.
-                if (element.root == null) {
-                    iMarginHeight = 0;
-                    iMarginWidth = 0;
-                    minimumWidth = this.minWidth;
-                    minimumHeight = this.minHeight;
-                } else {
-                    var computedStyle = window.getComputedStyle(element.root.host);
-                    iMarginWidth = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.marginRight.replace("px", ""));
-                    iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""));
-                    minimumHeight = Number(computedStyle.minHeight.replace("px", ""));
-                    minimumWidth = Number(computedStyle.minWidth.replace("px", ""));
-                }
-            }
+            // if(element) {
+            //     // Get Shadow CSS of Host to get Internal Margins.
+            //     if (element.root == null) {
+            //         computedStyle = window.getComputedStyle(element);
+            //     } else {
+            //         computedStyle = window.getComputedStyle(element.root.host);
+            //     }
+            // }
+            // // Get Real Size of Object
+            // element.style.minWidth = element.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
+            //              + Number(computedStyle.marginRight.replace("px", "")) + "px";
+            // element.style.minHeight = element.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
+            //     + Number(computedStyle.marginBottom.replace("px", "")) + "px";
 
-            //        if (element != null) {
-            //          computedStyle = window.getComputedStyle(element);
-            //          iMarginWidth = this._parseIntDef(computedStyle.marginLeft) + this._parseIntDef(computedStyle.marginRight);
-            //          iMarginHeight = this._parseIntDef(computedStyle.marginTop) + this._parseIntDef(computedStyle.marginBottom);
-            //          minimumHeight = element.scrollHeight + iMarginHeight;
-            //          minimumWidth = element.scrollWidth + iMarginWidth;
-            //        } else {
+            // minimumHeight = Number(computedStyle.minHeight.replace("px", ""));
+            // minimumWidth = Number(computedStyle.minWidth.replace("px", ""));
+            minimumHeight = 0;
+            minimumWidth = 0;
 
-            //        }
+            // minimumWidth = element.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
+            //     + Number(computedStyle.marginRight.replace("px", ""));
+            // minimumHeight = element.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
+            //     + Number(computedStyle.marginBottom.replace("px", ""));
+
+
+
             var dY = diffY, dX = diffX, processed = false;
             if(!direction){
                 return false;
@@ -695,36 +794,64 @@ Element that enables any DOM element to be draggable and resizable.
                 var overlay = this.selectedElements[i].overlay;
                 if (element) {
                     if (this.resizeHandle) {
+                        // Resize Element
                         var direction = this.resizeHandle.dataset.direction;
-                        position = this.position(element);
-                        this.bbox.elmX = position.left;
-                        this.bbox.elmY = position.top;
-//                        var dimension = this.dimension(dragInfo.currentTarget);
-//                        this.bbox.elmW = dimension.width;
-//                        this.bbox.elmH = dimension.height;
-                        this.bbox.elmW = element.clientWidth;
-                        this.bbox.elmH = element.clientHeight;
+                        // Actual top, left, width and height can be a lie because does not include margins, padding.
+                        // However to move object correctly you need these.
+                        this.bbox.elmX = parseInt(element.style.left, 10);
+                        this.bbox.elmY = parseInt(element.style.top, 10);
+                        this.bbox.elmW = parseInt(element.style.width, 10);
+                        this.bbox.elmH = parseInt(element.style.height,10);
+                        // Work out Movement
                         this.resizeHandleDrag(ddx, ddy, direction, element);
+                        // Unlock Element Size as min stops shrinking.
+                        element.style.minWidth = "0px";
+                        element.style.minHeight = "0px";
+                        // Now Resize Element
                         this._updateElementAll(element);
-                        // Fix Overlay
-                        if (element) {
-                            var position = this.position(element);
-                            var dimension = this.dimension(element);
-                            overlay.style.width = dimension.width + 'px';
-                            overlay.style.height = dimension.height + 'px';
-                            overlay.style.left = position.left + 'px';
-                            overlay.style.top = position.top + 'px';
-                        }
-//                        this._updateOverlayAll(overlay);
+                        // Check if Resize will break element.  Fix by changing minimumWidth
+                        var computedStyle = this.getComputedStyle(element);
+                        // Get Real Size of Object
+                        element.style.minWidth = element.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
+                            + Number(computedStyle.marginRight.replace("px", ""))
+                            - Number(computedStyle.paddingLeft.replace("px", ""))
+                            - Number(computedStyle.paddingRight.replace("px", "")) + "px";
+                        element.style.minHeight = element.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
+                            + Number(computedStyle.marginBottom.replace("px", ""))
+                            - Number(computedStyle.paddingTop.replace("px", ""))
+                            - Number(computedStyle.paddingBottom.replace("px", "")) + "px";
+                        // Now Do Overlay
+                        var position = this.position(element);
+                        var dimension = this.dimension(element);
+                        overlay.style.width = dimension.width + 'px';
+                        overlay.style.height = dimension.height + 'px';
+                        overlay.style.left = position.left + 'px';
+                        overlay.style.top = position.top + 'px';
+                        // Update Data Behind the Element configuration
                         this._updateGlyphAll(this.selectedElements[i].element);
                     }
                     else {
-                        position = this.position(element);
-                        this.bbox.elmX = position.left + element.clientLeft + ddx;
-                        this.bbox.elmY = position.top + element.clientTop + ddy;
+                        // Move Element
+                        // position = this.position2(element);
+                        // this.bbox.elmX = position.left + element.clientLeft + ddx;
+                        // this.bbox.elmY = position.top + element.clientTop + ddy;
+                        // this._updateOverlay(element);
+                        // this._updateOverlay(overlay);
+                        // this._updateGlyph(this.selectedElements[i].element);
+
+                        // Actual top, left, width and height can be a lie because does not include margins, padding.
+                        // However to move object correctly you need these.
+                        this.bbox.elmX = parseInt(element.style.left, 10) + ddx;
+                        this.bbox.elmY = parseInt(element.style.top, 10) + ddy;
                         this._updateOverlay(element);
-                        this._updateOverlay(overlay);
-                        this._updateGlyph(this.selectedElements[i].element);
+                        // Calculate for Overlay
+                        var position = this.position(element);
+                        var dimension = this.dimension(element);
+                        overlay.style.width = dimension.width + 'px';
+                        overlay.style.height = dimension.height + 'px';
+                        overlay.style.left = position.left + 'px';
+                        overlay.style.top = position.top + 'px';
+                        // this._updateOverlay(overlay);
                     }
                 }
             }
@@ -789,7 +916,6 @@ Element that enables any DOM element to be draggable and resizable.
                 console.log("Base Selected")
                 contextMenu.showMenu(this.menuData, event.target, ["add","undo","clipboard-paste"], event, function(command,node,sub,coords) {
                     if (command != null) {
-                        //            this.coordsClicked = {clientX: e.clientX - element.offsetLeft, clientY:e.clientY - element.offsetTop};
                         coords.clientX = coords.clientX - _this.dragdropareaElement.parentElement.offsetLeft;
                         coords.clientY = coords.clientY - _this.dragdropareaElement.parentElement.offsetTop;
                         _this.firev2(command,null,sub,coords);
@@ -961,6 +1087,19 @@ Element that enables any DOM element to be draggable and resizable.
         }
         firev2(name, details, sub, coords) {
             document.dispatchEvent(new CustomEvent(name, {detail: {detail: details, subcommand: sub, coords: coords}}));
+        }
+        //
+        //
+        //
+        getComputedStyle(element) {
+            if(element) {
+                // Get Shadow CSS of Host to get Internal Margins.
+                if (element.root == null) {
+                    return window.getComputedStyle(element);
+                } else {
+                    return window.getComputedStyle(element.root.host);
+                }
+            }
         }
         //
         // If Elements are altered external (not dragged) then update so that overlays move correctly.
