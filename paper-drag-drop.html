@@ -1,15 +1,24 @@
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../iron-iconset-svg/iron-iconset-svg.html">
 <!--
-Copyright (c) 2014 Wassim Chegham. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-Icons
+
+Paper Drag Drop -
+
+Based On Component By (But extensively changed now):
+
+  Copyright (c) 2014 Wassim Chegham. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+
+Icons From:
+
   Many Great Icons are provided by the Google Polymer Team - Just embedded for quick download. Under BSD style license
   See - https://github.com/PolymerElements/iron-icons/blob/master/iron-icons.html
   Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+
 -->
 
 <!--
@@ -681,36 +690,9 @@ Element that enables any DOM element to be draggable and resizable.
          * @return {Boolean} True if dimensions have been processed.
          */
         resizeHandleDrag(diffX, diffY, direction,element) {
-            // If the direction is one of the resize handles, resize one or two dimensions.
-            // Bounds checking is the hard bit -- basically for each edge, check that the
-            // element doesn't go under minimum size, and doesn't go beyond its boundary.
             var computedStyle , iMarginWidth,iMarginHeight, minimumHeight,minimumWidth;
-
-            // if(element) {
-            //     // Get Shadow CSS of Host to get Internal Margins.
-            //     if (element.root == null) {
-            //         computedStyle = window.getComputedStyle(element);
-            //     } else {
-            //         computedStyle = window.getComputedStyle(element.root.host);
-            //     }
-            // }
-            // // Get Real Size of Object
-            // element.style.minWidth = element.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
-            //              + Number(computedStyle.marginRight.replace("px", "")) + "px";
-            // element.style.minHeight = element.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
-            //     + Number(computedStyle.marginBottom.replace("px", "")) + "px";
-
-            // minimumHeight = Number(computedStyle.minHeight.replace("px", ""));
-            // minimumWidth = Number(computedStyle.minWidth.replace("px", ""));
             minimumHeight = 0;
             minimumWidth = 0;
-
-            // minimumWidth = element.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
-            //     + Number(computedStyle.marginRight.replace("px", ""));
-            // minimumHeight = element.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
-            //     + Number(computedStyle.marginBottom.replace("px", ""));
-
-
 
             var dY = diffY, dX = diffX, processed = false;
             if(!direction){
@@ -831,14 +813,6 @@ Element that enables any DOM element to be draggable and resizable.
                         this._updateGlyphAll(this.selectedElements[i].element);
                     }
                     else {
-                        // Move Element
-                        // position = this.position2(element);
-                        // this.bbox.elmX = position.left + element.clientLeft + ddx;
-                        // this.bbox.elmY = position.top + element.clientTop + ddy;
-                        // this._updateOverlay(element);
-                        // this._updateOverlay(overlay);
-                        // this._updateGlyph(this.selectedElements[i].element);
-
                         // Actual top, left, width and height can be a lie because does not include margins, padding.
                         // However to move object correctly you need these.
                         this.bbox.elmX = parseInt(element.style.left, 10) + ddx;
