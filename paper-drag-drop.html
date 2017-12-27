@@ -338,12 +338,12 @@ Element that enables any DOM element to be draggable and resizable.
                 },
                 {type: "add", description: "Add", command: "",submenu: this.menuAddObjects},
                 {type: "add", description: "-", command: ""},
-                {type: "clipboard", description: "Copy", command: "edit-copy", icon: "paperdragdrop:content-copy"},
-                {type: "clipboard", description: "Cut", command: "edit-cut",icon: "paperdragdrop:content-cut"},
-                {type: "clipboard-paste", description: "Paste", command: "edit-paste", icon: "paperdragdrop:content-paste"},
+                {type: "clipboard", description: "Copy", command: "edit-Clipboard", subcommand:"Copy", icon: "paperdragdrop:content-copy"},
+                {type: "clipboard", description: "Cut", command: "edit-Clipboard", subcommand:"Cut",icon: "paperdragdrop:content-cut"},
+                {type: "clipboard-paste", description: "Paste", command: "edit-Clipboard", subcommand:"Paste", icon: "paperdragdrop:content-paste"},
                 {type: "undo", description: "Undo", command: "edit-UndoStep",icon: "paperdragdrop:undo"},
                 {type: "delete", description: "-", command: ""},
-                {type: "delete", description: "Delete", command: "edit-delete",icon: "paperdragdrop:delete"}
+                {type: "delete", description: "Delete", command: "edit-Delete",icon: "paperdragdrop:delete"}
             ];
         }
         connectedCallback() {
@@ -353,11 +353,9 @@ Element that enables any DOM element to be draggable and resizable.
             document.addEventListener('mouseup', this._Bind_EventMouseUp);
             document.addEventListener('contextmenu', this._Bind_EventContextMenu);
             document.addEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
-
             // Find out Drag Drop Area so we can work out where it was clicked
             if (this.dragdropareaElement == null) {
                 this.dragdropareaElement = app.Poly.page.shadowRoot.querySelector('#' + this.dragdroparea);
-                console.log(this.dragdropareaElement);
             }
         }
         disconnectedCallback() {
@@ -461,14 +459,9 @@ Element that enables any DOM element to be draggable and resizable.
                 overlay.style.left = position.left + 'px';
                 overlay.style.top = position.top + 'px';
                 //
-                // Fire Events - Only works with 1 for editing.   Merging can come later if needed
+                // Fire Edit Element
                 //
-                if (this.selectedElements.length == 1) {
-                    this.fire('edit-SingleElement', this.selectedElements[0].element);
-                } else {
-                    // Not
-                    this.fire('edit-MultiElement', this.selectedElements);
-                }
+                this.fire('edit-Element', this.selectedElements);
             }
         }
         /**
@@ -505,12 +498,12 @@ Element that enables any DOM element to be draggable and resizable.
          * @param {DOMElement} element The element to compute.
          * @return {Object} The current top/left position of an element.
          */
-        position_hide(element) {
-            return {
-                top: element.clientTop,
-                left: element.clientLeft
-            }
-        }
+        // position_hide(element) {
+        //     return {
+        //         top: element.clientTop,
+        //         left: element.clientLeft
+        //     }
+        // }
         position(element){
             var offset = this.offset(element);
             return {
@@ -518,35 +511,35 @@ Element that enables any DOM element to be draggable and resizable.
                 left: offset.left - 0
             };
         }
-        position2(element){
-            var offset = this.offset2(element);
-            return {
-                top: offset.top - 0,
-                left: offset.left - 0
-            };
-        }
-        position3(element){
-            var offset = this.offset3(element);
-            return {
-                top: offset.top - 0,
-                left: offset.left - 0
-            };
-        }
-        offset3(element){
-            var docElem;
-            var o = {
-                top: 0,
-                left: 0
-            };
-            if(element) {
-                docElem = element.ownerDocument.documentElement;
-                o = {
-                    top: element.offsetTop - docElem.clientTop,
-                    left: element.offsetLeft - docElem.clientLeft
-                }
-            }
-            return o;
-        }
+        // position2(element){
+        //     var offset = this.offset2(element);
+        //     return {
+        //         top: offset.top - 0,
+        //         left: offset.left - 0
+        //     };
+        // }
+        // position3(element){
+        //     var offset = this.offset3(element);
+        //     return {
+        //         top: offset.top - 0,
+        //         left: offset.left - 0
+        //     };
+        // }
+        // offset3(element){
+        //     var docElem;
+        //     var o = {
+        //         top: 0,
+        //         left: 0
+        //     };
+        //     if(element) {
+        //         docElem = element.ownerDocument.documentElement;
+        //         o = {
+        //             top: element.offsetTop - docElem.clientTop,
+        //             left: element.offsetLeft - docElem.clientLeft
+        //         }
+        //     }
+        //     return o;
+        // }
         /**
          * A convenient function that computes the correct offset position of an element.
          *
@@ -573,63 +566,47 @@ Element that enables any DOM element to be draggable and resizable.
                     top: element.offsetTop - docElem.clientTop - iMarginTop,
                     left: element.offsetLeft - docElem.clientLeft - iMarginLeft
                 }
-                // if (element.root == null) {
-                //     docElem = element.ownerDocument.documentElement;
-                //     o = {
-                //         top: element.offsetTop - docElem.clientTop,
-                //         left: element.offsetLeft - docElem.clientLeft
-                //     }
-                // } else {
-                //     var computedStyle = window.getComputedStyle(element.root.host);
-                //     var iMarginLeft = computedStyle.marginLeft.replace("px", "") + computedStyle.paddingLeft.replace("px", "") ;
-                //     var iMarginTop = computedStyle.marginTop.replace("px", "");
-                //     docElem = element.ownerDocument.documentElement;
-                //     o = {
-                //         top: element.offsetTop - docElem.clientTop - iMarginTop,
-                //         left: element.offsetLeft - docElem.clientLeft - iMarginLeft
-                //     }
-                // }
             }
             return o;
         }
-        offset2(element){
-            var docElem;
-            var o = {
-                top: 0,
-                left: 0
-            };
-
-            if(element) {
-                // Get Shadow CSS of Host to get Internal Margins.
-                var computedStyle = this.getComputedStyle(element);
-                var iMarginLeft = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.borderLeftWidth.replace("px", ""));
-                    // + Number(computedStyle.paddingLeft.replace("px", ""));
-                var iMarginTop = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.borderTopWidth.replace("px", ""));
-                    // + Number(computedStyle.paddingTop.replace("px", ""));
-                docElem = element.ownerDocument.documentElement;
-                o = {
-                    top: element.offsetTop - docElem.clientTop - iMarginTop,
-                    left: element.offsetLeft - docElem.clientLeft - iMarginLeft
-                }
-                // if (element.root == null) {
-                //     docElem = element.ownerDocument.documentElement;
-                //     o = {
-                //         top: element.offsetTop - docElem.clientTop,
-                //         left: element.offsetLeft - docElem.clientLeft
-                //     }
-                // } else {
-                //     var computedStyle = window.getComputedStyle(element.root.host);
-                //     var iMarginLeft = computedStyle.marginLeft.replace("px", "") + computedStyle.paddingLeft.replace("px", "") ;
-                //     var iMarginTop = computedStyle.marginTop.replace("px", "");
-                //     docElem = element.ownerDocument.documentElement;
-                //     o = {
-                //         top: element.offsetTop - docElem.clientTop - iMarginTop,
-                //         left: element.offsetLeft - docElem.clientLeft - iMarginLeft
-                //     }
-                // }
-            }
-            return o;
-        }
+        // offset2(element){
+        //     var docElem;
+        //     var o = {
+        //         top: 0,
+        //         left: 0
+        //     };
+        //
+        //     if(element) {
+        //         // Get Shadow CSS of Host to get Internal Margins.
+        //         var computedStyle = this.getComputedStyle(element);
+        //         var iMarginLeft = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.borderLeftWidth.replace("px", ""));
+        //             // + Number(computedStyle.paddingLeft.replace("px", ""));
+        //         var iMarginTop = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.borderTopWidth.replace("px", ""));
+        //             // + Number(computedStyle.paddingTop.replace("px", ""));
+        //         docElem = element.ownerDocument.documentElement;
+        //         o = {
+        //             top: element.offsetTop - docElem.clientTop - iMarginTop,
+        //             left: element.offsetLeft - docElem.clientLeft - iMarginLeft
+        //         }
+        //         // if (element.root == null) {
+        //         //     docElem = element.ownerDocument.documentElement;
+        //         //     o = {
+        //         //         top: element.offsetTop - docElem.clientTop,
+        //         //         left: element.offsetLeft - docElem.clientLeft
+        //         //     }
+        //         // } else {
+        //         //     var computedStyle = window.getComputedStyle(element.root.host);
+        //         //     var iMarginLeft = computedStyle.marginLeft.replace("px", "") + computedStyle.paddingLeft.replace("px", "") ;
+        //         //     var iMarginTop = computedStyle.marginTop.replace("px", "");
+        //         //     docElem = element.ownerDocument.documentElement;
+        //         //     o = {
+        //         //         top: element.offsetTop - docElem.clientTop - iMarginTop,
+        //         //         left: element.offsetLeft - docElem.clientLeft - iMarginLeft
+        //         //     }
+        //         // }
+        //     }
+        //     return o;
+        // }
 
         /**
          * A convenient function that computes the correct dimension of an element.
@@ -769,7 +746,6 @@ Element that enables any DOM element to be draggable and resizable.
             var ratio = 1 / this.zoomLevel;
             var ddx = (dragInfo.detail.ddx * ratio) | 0;
             var ddy = (dragInfo.detail.ddy * ratio) | 0;
-            var position;
             var i;
             for ( i = 0; i < this.selectedElements.length; ++i) {
                 var element = this.selectedElements[i].element.$.node;
@@ -825,28 +801,20 @@ Element that enables any DOM element to be draggable and resizable.
                         overlay.style.height = dimension.height + 'px';
                         overlay.style.left = position.left + 'px';
                         overlay.style.top = position.top + 'px';
-                        // this._updateOverlay(overlay);
+                        this._updateGlyph(this.selectedElements[i].element);
                     }
                 }
             }
             //
             // Fire Events
             //
-            if (this.selectedElements.length == 1) {
-                this.fire('edit-MovingResizeSingleElement', this.selectedElements[0].element);
-            } else {
-                this.fire('edit-MovingResizeMultiElement', this.selectedElements);
-            }
+            this.fire('edit-MovingResizeElements', this.selectedElements);
         }
         finishedDragging(dragInfo) {
             //
             // Fire Events
             //
-            if (this.selectedElements.length == 1) {
-                this.fire('edit-MoveResizeSingleElement', this.selectedElements[0].element);
-            } else {
-                this.fire('edit-MoveResizeMultiElement', this.selectedElements);
-            }
+            this.fire('edit-MoveResizeElements', this.selectedElements);
         }
         aspectRatioChanged(){
             if(this.aspectRatio === true){
@@ -870,7 +838,7 @@ Element that enables any DOM element to be draggable and resizable.
                     // Single - No Align
                     contextMenu.showMenu(this.menuData, event.target, ["add","delete","clipboard","undo"], event, function(command,node,sub,coords) {
                         if (command != null) {
-                            _this.fire(command,_this.selectedElements[0].element,sub,coords);
+                            _this.fire(command,_this.selectedElements,sub,coords);
                             console.log(command,node);
                         }
                     });
@@ -892,7 +860,7 @@ Element that enables any DOM element to be draggable and resizable.
                     if (command != null) {
                         coords.clientX = coords.clientX - _this.dragdropareaElement.parentElement.offsetLeft;
                         coords.clientY = coords.clientY - _this.dragdropareaElement.parentElement.offsetTop;
-                        _this.firev2(command,null,sub,coords);
+                        _this.fire(command,null,sub,coords);
                     }
                 });
                 event.stopPropagation();
@@ -1031,7 +999,6 @@ Element that enables any DOM element to be draggable and resizable.
         /**
          * Hook Paper Drag Drop into your Property Editor.
          *
-         *
          */
         SetPropertyEditor(propertyEditor) {
             if (typeof propertyEditor == 'function') {
@@ -1056,10 +1023,10 @@ Element that enables any DOM element to be draggable and resizable.
          * @param name of event
          * @param detail
          */
-        fire(name, details) {
+        fire_old(name, details) {
             document.dispatchEvent(new CustomEvent(name, {detail: details}));
         }
-        firev2(name, details, sub, coords) {
+        fire(name, details, sub, coords) {
             document.dispatchEvent(new CustomEvent(name, {detail: {detail: details, subcommand: sub, coords: coords}}));
         }
         //
