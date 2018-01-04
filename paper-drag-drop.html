@@ -303,15 +303,17 @@ Element that enables any DOM element to be draggable and resizable.
                     y: 0
                 }
             };
+
+            this.menuAddObjects = [];
+
             // Can Be Automated this....
-            this.menuAddObjects = [
-                {type: "add", description: "Add Label", command: "add-label"},
-                {type: "add", description: "Add Image", command: "add-image"},
-                {type: "add", description: "Add Button", command: "add-button"}
-            ];
+            // this.menuAddObjects = [
+            //     {type: "add", description: "Add Label", command: "add-label"},
+            //     {type: "add", description: "Add Image", command: "add-image"},
+            //     {type: "add", description: "Add Button", command: "add-button"}
+            // ];
             this._doMenu();
             this._Bind_EventMouseDown = this._EventMouseDown.bind(this);
-            this._Bind_EventMouseUp = this._EventMouseUp.bind(this);
             this._Bind_EventContextMenu = this._EventContextMenu.bind(this);
             this._Bind_EventRefreshOverlays = this._EventRefreshOverlays.bind(this);
             this._Bind_EventRefocus = this._EventRefocus.bind(this);
@@ -352,7 +354,6 @@ Element that enables any DOM element to be draggable and resizable.
             super.connectedCallback();
             // Critical to trap mouse movements
             document.addEventListener('mousedown', this._Bind_EventMouseDown);
-            document.addEventListener('mouseup', this._Bind_EventMouseUp);
             document.addEventListener('contextmenu', this._Bind_EventContextMenu);
             document.addEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
             document.addEventListener('edit-Refocus', this._Bind_EventRefocus);
@@ -364,18 +365,9 @@ Element that enables any DOM element to be draggable and resizable.
         disconnectedCallback() {
             super.disconnectedCallback();
             document.removeEventListener('mousedown', this._Bind_EventMouseDown);
-            document.removeEventListener('mouseup', this._Bind_EventMouseUp);
             document.removeEventListener('contextmenu', this._Bind_EventContextMenu);
             document.removeEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
             document.removeEventListener('edit-Refocus', this._Bind_EventRefocus);
-        }
-        /**
-         * Toggle the debug info tooltip
-         *
-         * @method toggleDebugInfo
-         */
-        toggleDebugInfo(){
-            this.$.debug_info.classList.toggle('hidden');
         }
         /**
          * This method is used to show all or a subset of the resize handlers.
@@ -436,14 +428,15 @@ Element that enables any DOM element to be draggable and resizable.
             event.preventDefault();
         }
         /**
-         * Focus (select) the active element.
+         * Focus add Element to list of Elements selected
          *
          * @method focus
-         * @param  {DOMElement} newElement The element to be selected.
+         * @param  {newElement} newElement The element to be selected.
+         * @param  {replace} replace Boolean to indicate if other elements selected are to be removed and replaced with this one.
          */
         focus(newElement, replace){
             // Should only be called when new item selected.  Otherwise something has gone wrong.
-            if (replace == true) {
+            if (replace === true) {
                 // Clear Out Result
                 this.selectedElements = [];
             }
@@ -456,6 +449,8 @@ Element that enables any DOM element to be draggable and resizable.
                 var overlay = this.shadowRoot.querySelector('#'+elementObj.name);
                 // Hook
                 elementObj.overlay = overlay;
+                // var position = this.position(newElement.$.node);
+                // var dimension = this.dimension(newElement);
                 var position = this.position(newElement.$.node);
                 var dimension = this.dimension(newElement.$.node);
                 overlay.style.width = dimension.width + 'px';
@@ -562,30 +557,10 @@ Element that enables any DOM element to be draggable and resizable.
                 var iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""))
                     + Number(computedStyle.borderTopWidth.replace("px", "")) + Number(computedStyle.borderBottomWidth.replace("px", ""))
                     + Number(computedStyle.paddingTop.replace("px", "")) + Number(computedStyle.paddingBottom.replace("px", ""));
-                // var iMarginWidth = Number(computedStyle.marginLeft.replace("px", ""))
-                //     + Number(computedStyle.borderLeftWidth.replace("px", ""))
-                //     + Number(computedStyle.paddingLeft.replace("px", "")) ;
-                // var iMarginHeight = Number(computedStyle.marginTop.replace("px", ""))
-                //     + Number(computedStyle.borderTopWidth.replace("px", ""))
-                //     + Number(computedStyle.paddingTop.replace("px", "")) ;
                 return {
-                    width: element.clientWidth  + iMarginWidth,
+                    width: element.clientWidth + iMarginWidth,
                     height: element.clientHeight + iMarginHeight
                 }
-                // if (element.root == null) {
-                //     return {
-                //         width: element.clientWidth,
-                //         height: element.clientHeight
-                //     }
-                // } else {
-                //     var computedStyle = window.getComputedStyle(element.root.host);
-                //     var iMarginWidth = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.marginRight.replace("px", ""));
-                //     var iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""));
-                //     return {
-                //         width: element.clientWidth  + iMarginWidth,
-                //         height: element.clientHeight + iMarginHeight
-                //     }
-                // }
             }
         }
         /**
@@ -679,7 +654,8 @@ Element that enables any DOM element to be draggable and resizable.
             var ddy = (dragInfo.detail.ddy * ratio) | 0;
             var i;
             for ( i = 0; i < this.selectedElements.length; ++i) {
-                var element = this.selectedElements[i].element.$.node;
+                var elementNode = this.selectedElements[i].element.$.node;
+                var element = this.selectedElements[i].element;
                 var overlay = this.selectedElements[i].overlay;
                 if (element) {
                     if (this.resizeHandle) {
@@ -699,13 +675,13 @@ Element that enables any DOM element to be draggable and resizable.
                         // Now Resize Element
                         this._updateElementAll(element);
                         // Check if Resize will break element.  Fix by changing minimumWidth
-                        var computedStyle = this.getComputedStyle(element);
+                        var computedStyle = this.getComputedStyle(elementNode);
                         // Get Real Size of Object
-                        element.style.minWidth = element.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
+                        element.style.minWidth = elementNode.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
                             + Number(computedStyle.marginRight.replace("px", ""))
                             - Number(computedStyle.paddingLeft.replace("px", ""))
                             - Number(computedStyle.paddingRight.replace("px", "")) + "px";
-                        element.style.minHeight = element.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
+                        element.style.minHeight = elementNode.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
                             + Number(computedStyle.marginBottom.replace("px", ""))
                             - Number(computedStyle.paddingTop.replace("px", ""))
                             - Number(computedStyle.paddingBottom.replace("px", "")) + "px";
@@ -786,7 +762,7 @@ Element that enables any DOM element to be draggable and resizable.
                 event.preventDefault();
             } else if (event.path[0].classList.contains('Edit')) {
                 // Base Page - So Can add Items or do page functions
-                console.log("Base Selected")
+                console.log("Base Selected");
                 contextMenu.showMenu(this.menuData, event.target, ["add","undo","clipboard-paste"], event, function(command,node,sub,coords) {
                     if (command != null) {
                         coords.clientX = coords.clientX - _this.dragdropareaElement.parentElement.offsetLeft;
@@ -801,8 +777,7 @@ Element that enables any DOM element to be draggable and resizable.
                 console.log("Default Context Menu");
             }
         }
-        _EventMouseUp(event) {
-        }
+
         _firstPolymerObject(event, value) {
             // Internal - Find in the Event the first element that is a polymer object by searching for .$
             var i, element;
@@ -828,7 +803,7 @@ Element that enables any DOM element to be draggable and resizable.
             return false;
         }
         _EventMouseDown(event) {
-            var i, element, firstElement;
+            var element, firstElement;
             // First Element - Saved
             firstElement = event.path[0];
             // Search for specific attribute as group of objects to move.
@@ -880,8 +855,6 @@ Element that enables any DOM element to be draggable and resizable.
                     //              }
                 }
             }
-            //      event.stopPropagation();
-            //      event.preventDefault();
         }
         _generateMenu(e) {
             // Simply to block Menu
@@ -917,7 +890,7 @@ Element that enables any DOM element to be draggable and resizable.
             var i=0;
             var aData;
             while (aData = this.selectedElements[i++]) {
-                if (aData.element == newElement) {
+                if (aData.element === newElement) {
                     return aData;
                 }
             }
@@ -979,11 +952,14 @@ Element that enables any DOM element to be draggable and resizable.
         _EventRefreshOverlays() {
             var i;
             for (i = 0; i < this.selectedElements.length; ++i) {
-                var element = this.selectedElements[i].element.$.node;
+                var elementNode = this.selectedElements[i].element.$.node;
+                var element = this.selectedElements[i].element;
                 var overlay = this.selectedElements[i].overlay;
                 if (element) {
-                    var position = this.position(element);
-                    var dimension = this.dimension(element);
+                    var position = this.position(elementNode);
+                    // Node can be bigger than the holding element.  Thus use node for the actual
+                    // size, with the element for position.
+                    var dimension = this.dimension(elementNode);
                     overlay.style.width = dimension.width + 'px';
                     overlay.style.height = dimension.height + 'px';
                     overlay.style.left = position.left + 'px';
@@ -1008,3 +984,4 @@ Element that enables any DOM element to be draggable and resizable.
     }
     customElements.define(PaperDragDrop.is, PaperDragDrop);
 </script>
+
