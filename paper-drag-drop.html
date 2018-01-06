@@ -451,7 +451,7 @@ Element that enables any DOM element to be draggable and resizable.
                 elementObj.overlay = overlay;
                 // var position = this.position(newElement.$.node);
                 // var dimension = this.dimension(newElement);
-                var position = this.position(newElement.$.node);
+                var position = this.position(newElement, newElement.$.node);
                 var dimension = this.dimension(newElement.$.node);
                 overlay.style.width = dimension.width + 'px';
                 overlay.style.height = dimension.height + 'px';
@@ -497,11 +497,12 @@ Element that enables any DOM element to be draggable and resizable.
          * @param {DOMElement} element The element to compute.
          * @return {Object} The current top/left position of an element.
          */
-        position(element){
-            var offset = this.offset(element);
+        position(element, elementNode){
+            // Work out offset
+            var offset = this.offset(elementNode);
             return {
-                top: offset.top - 0,
-                left: offset.left - 0
+                top: parseInt(element.style.top) + offset.top,
+                left: parseInt(element.style.left) + offset.left
             };
         }
         /**
@@ -522,9 +523,9 @@ Element that enables any DOM element to be draggable and resizable.
                 // Get Computed Style
                 var computedStyle = this.getComputedStyle(element);
                 var iMarginLeft = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.borderLeftWidth.replace("px", ""))
-                                + Number(computedStyle.paddingLeft.replace("px", ""));
+                    + Number(computedStyle.paddingLeft.replace("px", ""));
                 var iMarginTop = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.borderTopWidth.replace("px", ""))
-                               + Number(computedStyle.paddingTop.replace("px", ""));
+                    + Number(computedStyle.paddingTop.replace("px", ""));
                 docElem = element.ownerDocument.documentElement;
                 o = {
                     top: element.offsetTop - docElem.clientTop - iMarginTop,
@@ -552,8 +553,8 @@ Element that enables any DOM element to be draggable and resizable.
             else {
                 var computedStyle = this.getComputedStyle(element);
                 var iMarginWidth = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.marginRight.replace("px", ""))
-                + Number(computedStyle.borderLeftWidth.replace("px", "")) + Number(computedStyle.borderRightWidth.replace("px", ""))
-                + Number(computedStyle.paddingLeft.replace("px", "")) + Number(computedStyle.paddingRight.replace("px", ""));
+                    + Number(computedStyle.borderLeftWidth.replace("px", "")) + Number(computedStyle.borderRightWidth.replace("px", ""))
+                    + Number(computedStyle.paddingLeft.replace("px", "")) + Number(computedStyle.paddingRight.replace("px", ""));
                 var iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""))
                     + Number(computedStyle.borderTopWidth.replace("px", "")) + Number(computedStyle.borderBottomWidth.replace("px", ""))
                     + Number(computedStyle.paddingTop.replace("px", "")) + Number(computedStyle.paddingBottom.replace("px", ""));
@@ -686,8 +687,8 @@ Element that enables any DOM element to be draggable and resizable.
                             - Number(computedStyle.paddingTop.replace("px", ""))
                             - Number(computedStyle.paddingBottom.replace("px", "")) + "px";
                         // Now Do Overlay
-                        var position = this.position(element);
-                        var dimension = this.dimension(element);
+                        var position = this.position(element, elementNode);
+                        var dimension = this.dimension(elementNode);
                         overlay.style.width = dimension.width + 'px';
                         overlay.style.height = dimension.height + 'px';
                         overlay.style.left = position.left + 'px';
@@ -702,8 +703,8 @@ Element that enables any DOM element to be draggable and resizable.
                         this.bbox.elmY = parseInt(element.style.top, 10) + ddy;
                         this._updateOverlay(element);
                         // Calculate for Overlay
-                        var position = this.position(element);
-                        var dimension = this.dimension(element);
+                        var position = this.position(element, element.$.node);
+                        var dimension = this.dimension(element.$.node);
                         overlay.style.width = dimension.width + 'px';
                         overlay.style.height = dimension.height + 'px';
                         overlay.style.left = position.left + 'px';
@@ -956,7 +957,7 @@ Element that enables any DOM element to be draggable and resizable.
                 var element = this.selectedElements[i].element;
                 var overlay = this.selectedElements[i].overlay;
                 if (element) {
-                    var position = this.position(elementNode);
+                    var position = this.position(element, elementNode);
                     // Node can be bigger than the holding element.  Thus use node for the actual
                     // size, with the element for position.
                     var dimension = this.dimension(elementNode);
