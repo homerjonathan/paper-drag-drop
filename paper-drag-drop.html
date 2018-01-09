@@ -1,24 +1,18 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../iron-iconset-svg/iron-iconset-svg.html">
 <!--
-
 Paper Drag Drop -
-
 Based On Component By (But extensively changed now):
-
   Copyright (c) 2014 Wassim Chegham. All rights reserved.
   This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
   The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
   The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
   Code distributed by Google as part of the polymer project is also
   subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-
 Icons From:
-
   Many Great Icons are provided by the Google Polymer Team - Just embedded for quick download. Under BSD style license
   See - https://github.com/PolymerElements/iron-icons/blob/master/iron-icons.html
   Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
-
 -->
 
 <!--
@@ -34,11 +28,20 @@ Element that enables any DOM element to be draggable and resizable.
 <dom-module id="paper-drag-drop">
   <template>
     <style>
-      .drag-elastic-band {
-        border: 1px dotted rgb(8, 253, 25);
-        display: none;
-        position: absolute;
+      /*
+        Band Selection of Elements
+       */
+      .hidden {
+        display: none !important;
       }
+      .drag-elastic-band {
+        border: 3px dotted rgb(8, 253, 25);
+        position: absolute;
+        border-radius: 2px;
+      }
+      /*
+        Resize of Elements - Overlay
+       */
       .drag-resize-selected {
         border: 1px dotted rgb(0, 150, 253);
         cursor: move;
@@ -117,19 +120,85 @@ Element that enables any DOM element to be draggable and resizable.
         right: -5px;
         cursor: se-resize;
       }
-      .hidden {
-        display: none;
-      }
     </style>
-    <div id="drag-elastic-band" class="drag-elastic-band"></div>
+    <div id="elasticband" class="drag-elastic-band hidden"></div>
     <iron-iconset-svg name="paperdragdrop" size="24">
       <svg><defs>
         <g id="content-copy"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></g>
         <g id="content-cut"><path d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm0 12c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm6-7.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM19 3l-6 6 2 2 7-7V3z"/></g>
         <g id="content-paste"><path d="M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z"/></g>
-        <g id="vertical-align-bottom"><path d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"/></g>
-        <g id="vertical-align-center"><path d="M8 19h3v4h2v-4h3l-4-4-4 4zm8-14h-3V1h-2v4H8l4 4 4-4zM4 11v2h16v-2H4z"/></g>
-        <g id="vertical-align-top"><path d="M8 11h3v10h2V11h3l-4-4-4 4zM4 3v2h16V3H4z"/></g>
+        <!--<g id="vertical-align-bottom"><path d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"/></g>-->
+        <g id="vertical-align-bottom" viewBox="0 0 16 16">
+          <line fill="none" stroke="#000000" stroke-width="1.0568" stroke-miterlimit="10" x1="15.2" y1="14.6" x2="0.8" y2="14.6"/>
+          <rect x="8.9" y="4.7" width="4.8" height="8.1"/>
+          <rect x="2.3" y="1.4" fill="none" stroke="#000000" stroke-width="0.7284" stroke-miterlimit="10" width="5" height="11.1"/>
+        </g>
+        <g id="align-center" viewBox="0 0 16 16">
+          <line fill="none" stroke="#000000" stroke-width="1.0568" stroke-miterlimit="10" x1="15.2" y1="8" x2="0.8" y2="8"/>
+          <rect x="8.9" y="4" width="4.8" height="8.1"/>
+          <rect x="2.3" y="2.5" fill="#FFFFFF" stroke="#000000" stroke-width="0.7284" stroke-miterlimit="10" width="5" height="11.1"/>
+        </g>
+        <g id="vertical-align-center" viewBox="0 0 16 16">
+          <line fill="none" stroke="#000000" stroke-width="1.0568" stroke-miterlimit="10" x1="8" y1="15.2" x2="8" y2="0.8"/>
+          <rect x="4" y="8.9" width="8.1" height="4.8"/>
+          <rect x="2.5" y="2.3" fill="#FFFFFF" stroke="#000000" stroke-width="0.7284" stroke-miterlimit="10" width="11.1" height="5"/>
+        </g>
+        <g id="vertical-align-top" viewBox="0 0 16 16">
+          <line fill="none" stroke="#000000" stroke-width="1.0568" stroke-miterlimit="10" x1="15.2" y1="1.4" x2="0.8" y2="1.4"/>
+          <rect x="8.9" y="3.2" width="4.8" height="8.1"/>
+          <rect x="2.3" y="3.5" fill="none" stroke="#000000" stroke-width="0.7284" stroke-miterlimit="10" width="5" height="11.1"/>
+        </g>
+        <g id="align-left" viewBox="0 0 16 16">
+          <line fill="none" stroke="#000000" stroke-width="1.0568" stroke-miterlimit="10" x1="2.1" y1="1" x2="2.1" y2="15.3"/>
+          <rect x="3.9" y="2.4" width="8.1" height="4.8"/>
+          <rect x="4.3" y="8.8" fill="none" stroke="#000000" stroke-width="0.7284" stroke-miterlimit="10" width="11.1" height="5"/>
+        </g>
+        <g id="align-right" viewBox="0 0 16 16">
+          <line fill="none" stroke="#000000" stroke-width="1.0568" stroke-miterlimit="10" x1="14.3" y1="1" x2="14.3" y2="15.3"/>
+          <rect x="4.4" y="2.4" width="8.1" height="4.8"/>
+          <rect x="1.1" y="8.8" fill="none" stroke="#000000" stroke-width="0.7284" stroke-miterlimit="10" width="11.1" height="5"/>
+        </g>
+        <g id="grow-height" viewBox="0 0 16 16">
+        <rect x="6.3" y="4" width="3.2" height="8.1"/>
+        <rect x="10.9" y="2.5" fill="#FFFFFF" stroke="#000000" stroke-width="0.6021" stroke-miterlimit="10" width="3.4" height="11.1"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M3.6,13.6c-0.2,0.2-0.4,0.2-0.6,0l-1.2-1.2c-0.2-0.2-0.2-0.4,0-0.6
+	c0.2-0.2,0.4-0.2,0.6,0l0.5,0.5l0-3.1c0-0.1,0-0.2,0.1-0.3c0.2-0.2,0.4-0.2,0.6,0C3.7,9,3.7,9.1,3.7,9.2v3.1l0.5-0.5
+	c0.2-0.2,0.4-0.2,0.6,0C5,12,5,12.2,4.8,12.4l0,0L3.6,13.6z"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M3.7,6.8c0,0.1,0,0.2-0.1,0.3C3.4,7.2,3.2,7.2,3,7.1C2.9,7,2.9,6.9,2.9,6.8V3.7
+	L2.4,4.2c-0.2,0.2-0.4,0.2-0.6,0C1.6,4,1.6,3.8,1.8,3.6L3,2.4c0.2-0.2,0.4-0.2,0.6,0l1.2,1.2C5,3.8,5,4,4.8,4.2
+	c-0.2,0.2-0.4,0.2-0.6,0L3.7,3.7V6.8"/>
+        </g>
+        <g id="shrink-width" viewBox="0 0 16 16">
+        <rect x="3.9" y="11.2" fill="#FFFFFF" stroke="#000000" stroke-width="0.6021" stroke-miterlimit="10" width="8.1" height="3.2"/>
+        <rect x="2.4" y="6.3" width="11.1" height="3.4"/>
+        <path d="M13.3,3.8h-3.1l0.5,0.5c0.2,0.2,0.2,0.4,0,0.6c-0.2,0.2-0.4,0.2-0.6,0L8.9,3.6C8.7,3.5,8.7,3.2,8.9,3l1.2-1.2
+	c0.2-0.2,0.4-0.2,0.6,0c0.2,0.2,0.2,0.4,0,0.6l-0.5,0.5h3.1c0.1,0,0.2,0,0.3,0.1c0.2,0.2,0.2,0.4,0,0.6C13.5,3.7,13.4,3.8,13.3,3.8
+	 M5.2,4.9C5,4.7,5,4.4,5.2,4.3l0.5-0.5H2.6c-0.1,0-0.2,0-0.3-0.1C2.1,3.5,2.1,3.2,2.3,3c0.1-0.1,0.2-0.1,0.3-0.1h3.1L5.2,2.4
+	C5,2.2,5,2,5.2,1.8c0.2-0.2,0.4-0.2,0.6,0L7,3c0.2,0.2,0.2,0.4,0,0.6L5.8,4.9C5.6,5,5.4,5,5.2,4.9"/>
+        </g>
+
+        <g id="shrink-height" viewBox="0 0 16 16">
+        <rect x="11.1" y="4" fill="#FFFFFF" stroke="#000000" stroke-width="0.6021" stroke-miterlimit="10" width="3.2" height="8.1"/>
+        <rect x="6.3" y="2.5" width="3.4" height="11.1"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M3,8.9c0.2-0.2,0.4-0.2,0.6,0l1.2,1.2c0.2,0.2,0.2,0.4,0,0.6
+	c-0.2,0.2-0.4,0.2-0.6,0l-0.5-0.5l0,3.1c0,0.1,0,0.2-0.1,0.3c-0.2,0.2-0.4,0.2-0.6,0c-0.1-0.1-0.1-0.2-0.1-0.3l0-3.1l-0.5,0.5
+	c-0.2,0.2-0.4,0.2-0.6,0c-0.2-0.2-0.2-0.4,0-0.6l0,0L3,8.9z"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M2.9,2.7c0-0.1,0-0.2,0.1-0.3c0.2-0.2,0.4-0.2,0.6,0c0.1,0.1,0.1,0.2,0.1,0.3v3.1
+	l0.5-0.5c0.2-0.2,0.4-0.2,0.6,0C5,5.4,5,5.7,4.8,5.8L3.6,7.1C3.4,7.2,3.2,7.2,3,7.1L1.8,5.8c-0.2-0.2-0.2-0.4,0-0.6
+	c0.2-0.2,0.4-0.2,0.6,0l0.5,0.5V2.7"/>
+        </g>
+
+        <g id="grow-width" viewBox="0 0 16 16">
+          <rect x="3.9" y="6.3" width="8.1" height="3.2"/>
+          <rect x="2.4" y="10.9" fill="#FFFFFF" stroke="#000000" stroke-width="0.6021" stroke-miterlimit="10" width="11.1" height="3.4"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M12.4,4.9L12.4,4.9c-0.2,0.2-0.4,0.2-0.6,0c-0.2-0.2-0.2-0.4,0-0.6l0.5-0.5H9.2
+	c-0.1,0-0.2,0-0.3-0.1C8.7,3.5,8.7,3.2,8.9,3C9,2.9,9.1,2.9,9.2,2.9l3.1,0l-0.5-0.5c-0.2-0.2-0.2-0.4,0-0.6c0.2-0.2,0.4-0.2,0.6,0
+	L13.6,3c0.2,0.2,0.2,0.4,0,0.6L12.4,4.9z M6.7,3.8H3.7l0.5,0.5c0.2,0.2,0.2,0.4,0,0.6C4,5,3.7,5,3.6,4.9L2.3,3.6
+	C2.1,3.5,2.1,3.2,2.3,3l1.2-1.2c0.2-0.2,0.4-0.2,0.6,0c0.2,0.2,0.2,0.4,0,0.6L3.7,2.9h3.1C6.8,2.9,7,2.9,7,3c0.2,0.2,0.2,0.4,0,0.6
+	C7,3.7,6.8,3.8,6.7,3.8"/>
+        </g>
+
+
         <g id="undo"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></g>
         <g id="delete"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></g>
       </defs></svg>
@@ -277,6 +346,14 @@ Element that enables any DOM element to be draggable and resizable.
             baseobject: {
                 type: String,
                 value: "$"
+            },
+            /**
+             * The id of the element that the paper-drag-drop is anchored to. This element
+             * must be a sibling.
+             */
+            for: {
+                type: String,
+                observer: '_findTarget'
             }
         }
         }
@@ -303,41 +380,40 @@ Element that enables any DOM element to be draggable and resizable.
                     y: 0
                 }
             };
-
             this.menuAddObjects = [];
-
-            // Can Be Automated this....
-            // this.menuAddObjects = [
-            //     {type: "add", description: "Add Label", command: "add-label"},
-            //     {type: "add", description: "Add Image", command: "add-image"},
-            //     {type: "add", description: "Add Button", command: "add-button"}
-            // ];
             this._doMenu();
             this._Bind_EventMouseDown = this._EventMouseDown.bind(this);
             this._Bind_EventContextMenu = this._EventContextMenu.bind(this);
             this._Bind_EventRefreshOverlays = this._EventRefreshOverlays.bind(this);
             this._Bind_EventRefocus = this._EventRefocus.bind(this);
         }
+        /**
+         *
+         *  Menu Data
+         *
+         **/
         _doMenu() {
             this.menuData = [
                 {
                     type: "align", description: "Align", command: "",
                     submenu: [
-                        {type: "align", description: "Left", command: "edit-Align", subcommand:"Left",icon: "paperdragdrop:"},
-                        {type: "align", description: "Right", command: "edit-Align",subcommand:"Right",icon: "paperdragdrop:content-copy"},
+                        {type: "align", description: "Left", command: "edit-Align", subcommand:"Left",icon: "paperdragdrop:align-left"},
+                        {type: "align", description: "Right", command: "edit-Align",subcommand:"Right",icon: "paperdragdrop:align-right"},
                         {type: "align", description: "Top", command: "edit-Align",subcommand:"Top",icon: "paperdragdrop:vertical-align-top"},
                         {type: "align", description: "Bottom", command: "edit-Align",subcommand:"Bottom",icon: "paperdragdrop:vertical-align-bottom"},
                         {type: "align", description: "Vertical Center", command: "edit-Align",subcommand:"Vertical",icon: "paperdragdrop:vertical-align-center"},
-                        {type: "align", description: "Horizontal Center", command: "edit-Align",subcommand:"Horizontal",icon: "paperdragdrop:vertical-align-center"}
+                        {type: "align", description: "Horizontal Center", command: "edit-Align",subcommand:"Horizontal",icon: "paperdragdrop:align-center"},
+                        {type: "align", description: "Horizontal Evenly", command: "edit-Align",subcommand:"HorizontalEvenly",icon: "paperdragdrop:align-vertical-evenly"},
+                        {type: "align", description: "Vertical Evenly", command: "edit-Align",subcommand:"VerticalEvenly",icon: "paperdragdrop:align-evenly"}
                     ]
                 },
                 {
                     type: "align", description: "Resize", command: "", icon:"arrow-drop-down",
                     submenu: [
-                        {type: "align", description: "Grow to Largest Width", command: "edit-Resize", subcommand:"GrowWidth"},
-                        {type: "align", description: "Shrink to Smallest Width", command: "edit-Resize", subcommand:"ShrinkWidth"},
-                        {type: "align", description: "Grow to Largest Height", command: "edit-Resize", subcommand:"GrowHeight"},
-                        {type: "align", description: "Shrink to Smallest Height", command: "edit-Resize", subcommand:"ShrinkHeight"}
+                        {type: "align", description: "Grow to Largest Width", command: "edit-Resize", subcommand:"GrowWidth",icon:"paperdragdrop:grow-width"},
+                        {type: "align", description: "Shrink to Smallest Width", command: "edit-Resize", subcommand:"ShrinkWidth",icon:"paperdragdrop:shrink-width"},
+                        {type: "align", description: "Grow to Largest Height", command: "edit-Resize", subcommand:"GrowHeight",icon:"paperdragdrop:grow-height"},
+                        {type: "align", description: "Shrink to Smallest Height", command: "edit-Resize", subcommand:"ShrinkHeight",icon:"paperdragdrop:shrink-height"}
                     ]
                 },
                 {type: "add", description: "Add", command: "",submenu: this.menuAddObjects},
@@ -352,11 +428,7 @@ Element that enables any DOM element to be draggable and resizable.
         }
         connectedCallback() {
             super.connectedCallback();
-            // Critical to trap mouse movements
-            document.addEventListener('mousedown', this._Bind_EventMouseDown);
-            document.addEventListener('contextmenu', this._Bind_EventContextMenu);
-            document.addEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
-            document.addEventListener('edit-Refocus', this._Bind_EventRefocus);
+            this._addListeners();
             // Find out Drag Drop Area so we can work out where it was clicked
             if (this.dragdropareaElement == null) {
                 this.dragdropareaElement = app.Poly.page.shadowRoot.querySelector('#' + this.dragdroparea);
@@ -364,10 +436,54 @@ Element that enables any DOM element to be draggable and resizable.
         }
         disconnectedCallback() {
             super.disconnectedCallback();
-            document.removeEventListener('mousedown', this._Bind_EventMouseDown);
-            document.removeEventListener('contextmenu', this._Bind_EventContextMenu);
-            document.removeEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
-            document.removeEventListener('edit-Refocus', this._Bind_EventRefocus);
+            this._removeListeners();
+        }
+
+        _findTarget() {
+            this._removeListeners();
+            this._target = this.target;
+            this._addListeners();
+        }
+
+        _addListeners() {
+            if (this._target) {
+                // Critical to trap mouse movements
+                this._target.addEventListener('mousedown', this._Bind_EventMouseDown);
+                this._target.addEventListener('mousemove', this._Bind_EventMouseMove);
+                this._target.addEventListener('contextmenu', this._Bind_EventContextMenu);
+                this._target.addEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
+                this._target.addEventListener('edit-Refocus', this._Bind_EventRefocus);
+            }
+        }
+        _removeListeners() {
+            if (this._target) {
+                this._target.removeEventListener('mousedown', this._Bind_EventMouseDown);
+                this._target.removeEventListener('click', this._Bind_EventMouseClick);
+                this._target.removeEventListener('mousemove', this._Bind_EventMouseMove);
+                this._target.removeEventListener('contextmenu', this._Bind_EventContextMenu);
+                this._target.removeEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
+                this._target.removeEventListener('edit-Refocus', this._Bind_EventRefocus);
+            }
+        }
+        /**
+         * Returns the target element that this tooltip is anchored to. It is
+         * either the element given by the `for` attribute, or the immediate parent
+         * of the tooltip.
+         */
+        get target () {
+            var parentNode = Polymer.dom(this).parentNode;
+            var target = parentNode.querySelector('#' + this.for);
+            return target;
+            // If the parentNode is a document fragment, then we need to use the host.
+            // var ownerRoot = Polymer.dom(this).getOwnerRoot();
+            // var target;
+            // if (this.for) {
+            //     target = parentNode.querySelector('#' + this.for);
+            // } else {
+            //     target = parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE ?
+            //         ownerRoot.host : parentNode;
+            // }
+            // return target;
         }
         /**
          * This method is used to show all or a subset of the resize handlers.
@@ -460,7 +576,7 @@ Element that enables any DOM element to be draggable and resizable.
                 //
                 // Fire Edit Element
                 //
-                this.fire('edit-Element', this.selectedElements);
+                this.fire('edit-Element', this.selectedElements,"",this.coordsClicked);
             }
         }
         /**
@@ -518,7 +634,6 @@ Element that enables any DOM element to be draggable and resizable.
                 top: 0,
                 left: 0
             };
-
             if(element) {
                 // Get Computed Style
                 var computedStyle = this.getComputedStyle(element);
@@ -534,7 +649,6 @@ Element that enables any DOM element to be draggable and resizable.
             }
             return o;
         }
-
         /**
          * A convenient function that computes the correct dimension of an element.
          *
@@ -570,65 +684,35 @@ Element that enables any DOM element to be draggable and resizable.
          * @method resizeHandleDrag
          * @param  {Number} diffX The mouse movement amounts for X axe
          * @param  {Number} diffY The mouse movement amounts for Y axe
-         * @param  {String} direction The resize handles that indicates wich direction is being resized.
+         * @param  {String} direction The resize handles that indicates which direction is being re-sized.
+         * @element {Object} Object being moved
          * @return {Boolean} True if dimensions have been processed.
          */
-        resizeHandleDrag(diffX, diffY, direction,element) {
-            var computedStyle , iMarginWidth,iMarginHeight, minimumHeight,minimumWidth;
-            minimumHeight = 0;
-            minimumWidth = 0;
-
-            var dY = diffY, dX = diffX, processed = false;
+        resizeHandleDrag(diffX, diffY, direction, element) {
+            var results = {
+                top: parseInt(element.style.top, 10),
+                left: parseInt(element.style.left, 10),
+                width: parseInt(element.style.width, 10),
+                height: parseInt(element.style.height,10)
+            };
             if(!direction){
                 return false;
             }
             if (direction.indexOf('t') >= 0) {
-                if (this.bbox.elmH - dY < minimumHeight) {
-                    diffY = this.bbox.elmH - minimumHeight;
-                    this.mouse.offset.y = dY - diffY;
-                } else if (this.bbox.elmY + dY < this.minTop) {
-                    diffY = this.minTop - this.bbox.elmY;
-                    this.mouse.offset.y = dY - diffY;
-                }
-                this.bbox.elmY += diffY;
-                this.bbox.elmH -= diffY;
-                processed = true;
+                results.top += diffY;
+                results.height -= diffY;
             }
             if (direction.indexOf('b') >= 0) {
-                if (this.bbox.elmH + dY < minimumHeight) {
-                    diffY = minimumHeight - this.bbox.elmH;
-                    this.mouse.offset.y = dY - diffY;
-                } else if (this.bbox.elmY + this.bbox.elmH + dY > this.maxTop) {
-                    diffY = this.maxTop - this.bbox.elmY - this.bbox.elmH;
-                    this.mouse.offset.y = dY - diffY;
-                }
-                this.bbox.elmH += diffY;
-                processed = true;
+                results.height += diffY;
             }
             if (direction.indexOf('l') >= 0) {
-                if (this.bbox.elmW - dX < minimumWidth) {
-                    diffX = this.bbox.elmW - minimumWidth;
-                    this.mouse.offset.x = dX - diffX;
-                } else if (this.bbox.elmX + dX < this.minLeft) {
-                    diffX = this.minLeft - this.bbox.elmX;
-                    this.mouse.offset.x = dX - diffX;
-                }
-                this.bbox.elmX += diffX;
-                this.bbox.elmW -= diffX;
-                processed = true;
+                results.left += diffX;
+                results.width -= diffX;
             }
             if (direction.indexOf('r') >= 0) {
-                if (this.bbox.elmW + dX < minimumWidth) {
-                    diffX = minimumWidth - this.bbox.elmW;
-                    this.mouse.offset.x = dX - diffX;
-                } else if (this.bbox.elmX + this.bbox.elmW + dX > this.maxLeft) {
-                    diffX = this.maxLeft - this.bbox.elmX - this.bbox.elmW;
-                    this.mouse.offset.x = dX - diffX;
-                }
-                this.bbox.elmW += diffX;
-                processed = true;
+                results.width += diffX;
             }
-            return processed;
+            return results;
         }
         /**
          * OnDrag event (triggered during the "drag-start" event).
@@ -655,61 +739,49 @@ Element that enables any DOM element to be draggable and resizable.
             var ddy = (dragInfo.detail.ddy * ratio) | 0;
             var i;
             for ( i = 0; i < this.selectedElements.length; ++i) {
+                // This is actual side of the element
                 var elementNode = this.selectedElements[i].element.$.node;
+                // This is the Polymer Object being moved
                 var element = this.selectedElements[i].element;
+                // This is the overlay border that allows the shape to resized
                 var overlay = this.selectedElements[i].overlay;
+                // Check that we are accessing a Element
                 if (element) {
                     if (this.resizeHandle) {
+                        //
                         // Resize Element
+                        //
                         var direction = this.resizeHandle.dataset.direction;
-                        // Actual top, left, width and height can be a lie because does not include margins, padding.
-                        // However to move object correctly you need these.
-                        this.bbox.elmX = parseInt(element.style.left, 10);
-                        this.bbox.elmY = parseInt(element.style.top, 10);
-                        this.bbox.elmW = parseInt(element.style.width, 10);
-                        this.bbox.elmH = parseInt(element.style.height,10);
-                        // Work out Movement
-                        this.resizeHandleDrag(ddx, ddy, direction, element);
+                        var data = this.resizeHandleDrag(ddx, ddy, direction, element);
                         // Unlock Element Size as min stops shrinking.
-                        element.style.minWidth = "0px";
-                        element.style.minHeight = "0px";
-                        // Now Resize Element
-                        this._updateElementAll(element);
-                        // Check if Resize will break element.  Fix by changing minimumWidth
-                        var computedStyle = this.getComputedStyle(elementNode);
-                        // Get Real Size of Object
-                        element.style.minWidth = elementNode.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
-                            + Number(computedStyle.marginRight.replace("px", ""))
-                            - Number(computedStyle.paddingLeft.replace("px", ""))
-                            - Number(computedStyle.paddingRight.replace("px", "")) + "px";
-                        element.style.minHeight = elementNode.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
-                            + Number(computedStyle.marginBottom.replace("px", ""))
-                            - Number(computedStyle.paddingTop.replace("px", ""))
-                            - Number(computedStyle.paddingBottom.replace("px", "")) + "px";
-                        // Now Do Overlay
-                        var position = this.position(element, elementNode);
-                        var dimension = this.dimension(elementNode);
-                        overlay.style.width = dimension.width + 'px';
-                        overlay.style.height = dimension.height + 'px';
-                        overlay.style.left = position.left + 'px';
-                        overlay.style.top = position.top + 'px';
-                        // Update Data Behind the Element configuration
-                        this._updateGlyphAll(this.selectedElements[i].element);
+                        this._updateStyleMinSize(element,0,0);
+                        // Move Actual Element
+                        this._updateStylePositionSize(element,data.left, data.top, data.width, data.height);
+                        // Calculate if allowed to Shrink
+                        var cr = this.getComputedStyleResults(elementNode);
+                        // Fix the Size
+                        this._updateStyleMinSize(element,cr.minWidth,cr.minHeight);
+                        // Resize the Overlay to fixed size
+                        this._updateStylePositionSize(overlay,cr.left + data.left, cr.top + data.top,cr.minWidth,cr.minHeight);
+                        // Update Data Behind the Element configuration - Locking Min Width and Min Height
+                        this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth, cr.minHeight);
                     }
                     else {
-                        // Actual top, left, width and height can be a lie because does not include margins, padding.
-                        // However to move object correctly you need these.
-                        this.bbox.elmX = parseInt(element.style.left, 10) + ddx;
-                        this.bbox.elmY = parseInt(element.style.top, 10) + ddy;
-                        this._updateOverlay(element);
+                        //
+                        // Moving Object
+                        //
+                        // Apply Mouse movements in ddx and ddy to element
+                        var data = { left: parseInt(element.style.left, 10) + ddx,
+                                     top: parseInt(element.style.top, 10) + ddy};
+                        this._updateStylePositionOnly(element,data.left,data.top);
                         // Calculate for Overlay
-                        var position = this.position(element, element.$.node);
-                        var dimension = this.dimension(element.$.node);
-                        overlay.style.width = dimension.width + 'px';
-                        overlay.style.height = dimension.height + 'px';
-                        overlay.style.left = position.left + 'px';
-                        overlay.style.top = position.top + 'px';
-                        this._updateGlyph(this.selectedElements[i].element);
+                        // Actual top, left, width and height can be a lie because does not include margins, padding.
+                        // Calculate if allowed to Shrink
+                        var cr = this.getComputedStyleResults(elementNode);
+                        // Resize the Overlay to fixed size
+                        this._updateStylePositionSize(overlay,cr.left + data.left, cr.top + data.top,cr.minWidth,cr.minHeight);
+                        // Update Data Behind the Element configuration - Locking Min Width and Min Height
+                        this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth, cr.minHeight);
                     }
                 }
             }
@@ -778,7 +850,6 @@ Element that enables any DOM element to be draggable and resizable.
                 console.log("Default Context Menu");
             }
         }
-
         _firstPolymerObject(event, value) {
             // Internal - Find in the Event the first element that is a polymer object by searching for .$
             var i, element;
@@ -803,6 +874,7 @@ Element that enables any DOM element to be draggable and resizable.
             }
             return false;
         }
+
         _EventMouseDown(event) {
             var element, firstElement;
             // First Element - Saved
@@ -829,6 +901,9 @@ Element that enables any DOM element to be draggable and resizable.
                     if(filteredElements){
                         event.stopPropagation();
                         event.preventDefault();
+                        // Store Mouse Click - Focus Needs this value
+                        this._positionClicked(event);
+                        // Check if control key is pressed
                         if (event.ctrlKey) {
                             // Add to list
                             this.focus(element,false);
@@ -856,24 +931,42 @@ Element that enables any DOM element to be draggable and resizable.
                     //              }
                 }
             }
+            event.stopPropagation();
+            event.preventDefault();
         }
         _generateMenu(e) {
             // Simply to block Menu
             e.preventDefault();
         }
+
+        _updateStylePositionOnly(element,left,top) {
+            element.style.left = left + 'px';
+            element.style.top = top + 'px';
+        }
+        _updateStylePositionSize(element,left,top,width,height) {
+            element.style.left = left + 'px';
+            element.style.top = top + 'px';
+            element.style.width = width + 'px';
+            element.style.height = height + 'px';
+        }
+        _updateStyleMinSize(element,width,height) {
+            element.style.minWidth = width + 'px';
+            element.style.minHeight = height + 'px';
+        }
+        _updateGlyphPositionOnly(element,left,top) {
+            element.Glyph.x = left + 'px';
+            element.Glyph.y = top + 'px';
+        }
+        _updateGlyphPositionSize(element,left,top,width,height) {
+            element.Glyph.x = left + 'px';
+            element.Glyph.y = top + 'px';
+            element.Glyph.width = width + 'px';
+            element.Glyph.height = height + 'px';
+        }
+
+
+
         _updateOverlay(pElement) {
-            pElement.style.left = this.bbox.elmX + 'px';
-            pElement.style.top = this.bbox.elmY + 'px';
-        }
-        _updateOverlayAll(pElement) {
-            pElement.style.width = this.bbox.elmW + 'px';
-            pElement.style.height = this.bbox.elmH + 'px';
-            pElement.style.left = this.bbox.elmX + 'px';
-            pElement.style.top = this.bbox.elmY + 'px';
-        }
-        _updateElementAll(pElement) {
-            pElement.style.width = this.bbox.elmW + 'px';
-            pElement.style.height = this.bbox.elmH + 'px';
             pElement.style.left = this.bbox.elmX + 'px';
             pElement.style.top = this.bbox.elmY + 'px';
         }
@@ -926,11 +1019,10 @@ Element that enables any DOM element to be draggable and resizable.
         /**
          * Fire - To replace Polymer 1.x version that disappeared!
          * @param name of event
-         * @param detail
+         * @param detail Array of objects event is for
+         * @param sub Subcommand.  Makes it easy to merge commands into one event
+         * @param coords Where the mouse was clicked.  Useful for Add to page and not allow tool window to overlay
          */
-        fire_old(name, details) {
-            document.dispatchEvent(new CustomEvent(name, {detail: details}));
-        }
         fire(name, details, sub, coords) {
             document.dispatchEvent(new CustomEvent(name, {detail: {detail: details, subcommand: sub, coords: coords}}));
         }
@@ -947,6 +1039,61 @@ Element that enables any DOM element to be draggable and resizable.
                 }
             }
         }
+
+        getComputedStyleResults(element) {
+            var computedStyle = this.getComputedStyle(element);
+            var results = {};
+            //
+            // Minimum Width, Height - Most HTML elements will only shrink so far.  So this returns that minimum
+            //
+            results.minWidth = element.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
+                + Number(computedStyle.marginRight.replace("px", ""))
+                - Number(computedStyle.paddingLeft.replace("px", ""))
+                - Number(computedStyle.paddingRight.replace("px", ""));
+            results.minHeight = element.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
+                + Number(computedStyle.marginBottom.replace("px", ""))
+                - Number(computedStyle.paddingTop.replace("px", ""))
+                - Number(computedStyle.paddingBottom.replace("px", ""));
+            //
+            // Returns True Width and Height including any borders, padding, margins etc.
+            //
+            var iMarginWidth = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.marginRight.replace("px", ""))
+                    + Number(computedStyle.borderLeftWidth.replace("px", "")) + Number(computedStyle.borderRightWidth.replace("px", ""))
+                    + Number(computedStyle.paddingLeft.replace("px", "")) + Number(computedStyle.paddingRight.replace("px", ""));
+            var iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""))
+                    + Number(computedStyle.borderTopWidth.replace("px", "")) + Number(computedStyle.borderBottomWidth.replace("px", ""))
+                    + Number(computedStyle.paddingTop.replace("px", "")) + Number(computedStyle.paddingBottom.replace("px", ""));
+            results.width = element.clientWidth + iMarginWidth;
+            results.height = element.clientHeight + iMarginHeight;
+            //
+            // Returns True Left and Top
+            //
+            var iMarginLeft = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.borderLeftWidth.replace("px", ""))
+                    + Number(computedStyle.paddingLeft.replace("px", ""));
+            var iMarginTop = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.borderTopWidth.replace("px", ""))
+                    + Number(computedStyle.paddingTop.replace("px", ""));
+            var docElem = element.ownerDocument.documentElement;
+            // results.top = parseInt(element.style.top) + element.offsetTop - docElem.clientTop - iMarginTop;
+            // results.left = parseInt(element.style.left) + element.offsetLeft - docElem.clientLeft - iMarginLeft;
+            results.top =  element.offsetTop - docElem.clientTop - iMarginTop;
+            results.left = element.offsetLeft - docElem.clientLeft - iMarginLeft;
+            return results;
+        }
+        //
+        // Get Mouse Position
+        //
+        // Position on Document Clicked.  This needs to be translated by the click
+        _positionClicked(e){
+            var temp = this._getMousePosition(e);
+            this.coordsClicked = {clientX: temp.x, clientY: temp.y};
+        }
+        _getMousePosition(e){
+            var t,n;
+            return e.pageX||e.pageY?(t=e.pageX,n=e.pageY):
+                (e.clientX||e.clientY)&&(t=e.clientX+document.body.scrollLeft+document.documentElement.scrollLeft,
+                    n=e.clientY+document.body.scrollTop+document.documentElement.scrollTop),
+                {x:t,y:n}
+        }
         //
         // If Elements are altered external (not dragged) then update so that overlays move correctly.
         //
@@ -957,14 +1104,11 @@ Element that enables any DOM element to be draggable and resizable.
                 var element = this.selectedElements[i].element;
                 var overlay = this.selectedElements[i].overlay;
                 if (element) {
+
                     var position = this.position(element, elementNode);
-                    // Node can be bigger than the holding element.  Thus use node for the actual
-                    // size, with the element for position.
                     var dimension = this.dimension(elementNode);
-                    overlay.style.width = dimension.width + 'px';
-                    overlay.style.height = dimension.height + 'px';
-                    overlay.style.left = position.left + 'px';
-                    overlay.style.top = position.top + 'px';
+
+                    this._updateStylePositionSize(overlay,position.left, position.top,dimension.width,dimension.height);
                 }
             }
         }
@@ -985,4 +1129,3 @@ Element that enables any DOM element to be draggable and resizable.
     }
     customElements.define(PaperDragDrop.is, PaperDragDrop);
 </script>
-
