@@ -243,7 +243,7 @@ Element that enables any DOM element to be draggable and resizable.
              */
             minWidth: {
                 type: Number,
-                value: 10
+                value: 8
             },
             /**
              * `minHeight` is the minimum pixel height of the element.
@@ -254,73 +254,7 @@ Element that enables any DOM element to be draggable and resizable.
              */
             minHeight: {
                 type: Number,
-                value: 10
-            },
-            /**
-             * `minLeft` is the minimum left position, in pixels.
-             *
-             * @property minLeft
-             * @type number
-             * @default -9999
-             */
-            minLeft: {
-                type: Number,
-                value: -9999
-            },
-            /**
-             * `maxLeft` is the maximum left position, in pixels.
-             *
-             * @property maxLeft
-             * @type number
-             * @default 9999
-             */
-            maxLeft: {
-                type: Number,
-                value: 9999
-            },
-            /**
-             * `minTop` is the minimum top position, in pixels.
-             *
-             * @property minTop
-             * @type number
-             * @default -9999
-             */
-            minTop: {
-                type: Number,
-                value: -9999
-            },
-            /**
-             * `maxTop` is the minimum top position, in pixels.
-             *
-             * @property maxTop
-             * @type number
-             * @default 9999
-             */
-            maxTop: {
-                type: Number,
-                value: 9999
-            },
-            /**
-             * `zoomRatio` is the zoom ratio used to scale the element.
-             *
-             * @property zoomRatio
-             * @type number
-             * @default 1
-             */
-            zoomRatio: {
-                type: Number,
-                value: 1
-            },
-            /**
-             * `zoomLevel` is the original zoom level.
-             *
-             * @property zoomLevel
-             * @type number
-             * @default 1
-             */
-            zoomLevel: {
-                type: Number,
-                value: 1
+                value: 8
             },
             class: {
                 type: String,
@@ -400,7 +334,6 @@ Element that enables any DOM element to be draggable and resizable.
             super.disconnectedCallback();
             this._removeListeners();
         }
-
         _addListeners() {
             document.addEventListener('mousedown', this._Bind_EventMouseDown);
             document.addEventListener('contextmenu', this._Bind_EventContextMenu);
@@ -412,26 +345,6 @@ Element that enables any DOM element to be draggable and resizable.
             document.removeEventListener('contextmenu', this._Bind_EventContextMenu);
             document.removeEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
             document.removeEventListener('edit-Refocus', this._Bind_EventRefocus);
-        }
-        /**
-         * Returns the target element that this tooltip is anchored to. It is
-         * either the element given by the `for` attribute, or the immediate parent
-         * of the tooltip.
-         */
-        get target () {
-            var parentNode = Polymer.dom(this).parentNode;
-            var target = parentNode.querySelector('#' + this.for);
-            return target;
-            // If the parentNode is a document fragment, then we need to use the host.
-            // var ownerRoot = Polymer.dom(this).getOwnerRoot();
-            // var target;
-            // if (this.for) {
-            //     target = parentNode.querySelector('#' + this.for);
-            // } else {
-            //     target = parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE ?
-            //         ownerRoot.host : parentNode;
-            // }
-            // return target;
         }
         /**
          * This method is used to show all or a subset of the resize handlers.
@@ -506,21 +419,26 @@ Element that enables any DOM element to be draggable and resizable.
             }
             if ( this.enable && newElement && !newElement.classList.contains('drag-resize-selected') ) {
                 // Add With Index Name - Use Polymer so it can see the request
-                var elementObj = this._elementAlreadyAdded(newElement);
+                var overlayData = this._elementAlreadyAdded(newElement);
                 // Force immediate render.  No performance issues as only human speed of clicking
                 this.$.selectedelements.render();
                 // Not the most elegant but...grab overlay
-                var overlay = this.shadowRoot.querySelector('#'+elementObj.name);
-                // Hook
-                elementObj.overlay = overlay;
-                // var position = this.position(newElement.$.node);
-                // var dimension = this.dimension(newElement);
-                var position = this.position(newElement, newElement.$.node);
-                var dimension = this.dimension(newElement.$.node);
-                overlay.style.width = dimension.width + 'px';
-                overlay.style.height = dimension.height + 'px';
-                overlay.style.left = position.left + 'px';
-                overlay.style.top = position.top + 'px';
+                var overlay = this.shadowRoot.querySelector('#' + overlayData.name);
+                // Hook Overlay into selected elements
+                overlayData.overlay = overlay;
+                // Now Use as Normal
+                var element = overlayData.element;
+                var elementNode = newElement.$.node;
+                var data = { left: parseInt(element.style.left, 10),
+                    top: parseInt(element.style.top, 10),
+                    width: parseInt(element.style.width, 10),
+                    height: parseInt(element.style.top, 10)};
+                // Calculate the real size of the node
+                var cr = this.getComputedStyleResults(elementNode);
+                // Update Overlay
+                this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.minWidth,cr.minHeight);
+                // Update Data - Main value here is the Min Height and Width
+                this._updateGlyphPositionSize(element,data.left, data.top, cr.minWidth, cr.minHeight);
                 //
                 // Fire Edit Element
                 //
@@ -535,78 +453,6 @@ Element that enables any DOM element to be draggable and resizable.
         blur(){
             this.fire('edit-Cancel', null);
             this.resizeHandle = null;
-        }
-        /**
-         * A convenient function that computes the exact position of an element.
-         *
-         * @method position
-         * @param {DOMElement} element The element to compute.
-         * @return {Object} The current top/left position of an element.
-         */
-        position(element, elementNode){
-            // Work out offset
-            var offset = this.offset(elementNode);
-            return {
-                top: parseInt(element.style.top) + offset.top,
-                left: parseInt(element.style.left) + offset.left
-            };
-        }
-        /**
-         * A convenient function that computes the correct offset position of an element.
-         *
-         * @method offset
-         * @param {DOMElement} element The element to compute.
-         * @return {Object} The current top/left offset position of an element.
-         */
-        offset(element){
-            var docElem;
-            var o = {
-                top: 0,
-                left: 0
-            };
-            if(element) {
-                // Get Computed Style
-                var computedStyle = this.getComputedStyle(element);
-                var iMarginLeft = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.borderLeftWidth.replace("px", ""))
-                    + Number(computedStyle.paddingLeft.replace("px", ""));
-                var iMarginTop = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.borderTopWidth.replace("px", ""))
-                    + Number(computedStyle.paddingTop.replace("px", ""));
-                docElem = element.ownerDocument.documentElement;
-                o = {
-                    top: element.offsetTop - docElem.clientTop - iMarginTop,
-                    left: element.offsetLeft - docElem.clientLeft - iMarginLeft
-                }
-            }
-            return o;
-        }
-        /**
-         * A convenient function that computes the correct dimension of an element.
-         *
-         * @method dimension
-         * @param {DOMElement} element The element to compute.
-         * @return {Object} The current width/height of an element.
-         */
-        dimension(element){
-            function getDisplayType(element) {
-                return (element.currentStyle || window.getComputedStyle(element, '')).display;
-            }
-            var displayType = getDisplayType(element);
-            if(displayType === 'inline' || displayType === ''){
-                return element.getBoundingClientRect();
-            }
-            else {
-                var computedStyle = this.getComputedStyle(element);
-                var iMarginWidth = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.marginRight.replace("px", ""))
-                    + Number(computedStyle.borderLeftWidth.replace("px", "")) + Number(computedStyle.borderRightWidth.replace("px", ""))
-                    + Number(computedStyle.paddingLeft.replace("px", "")) + Number(computedStyle.paddingRight.replace("px", ""));
-                var iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""))
-                    + Number(computedStyle.borderTopWidth.replace("px", "")) + Number(computedStyle.borderBottomWidth.replace("px", ""))
-                    + Number(computedStyle.paddingTop.replace("px", "")) + Number(computedStyle.paddingBottom.replace("px", ""));
-                return {
-                    width: element.clientWidth + iMarginWidth,
-                    height: element.clientHeight + iMarginHeight
-                }
-            }
         }
         /**
          * Changes the stored element dimensions and mouse offset X and Y.
@@ -685,7 +531,7 @@ Element that enables any DOM element to be draggable and resizable.
                         var direction = this.resizeHandle.dataset.direction;
                         var data = this.resizeHandleDrag(ddx, ddy, direction, element);
                         // Unlock Element Size as min stops shrinking.
-                        this._updateStyleMinSize(element,8,8);
+                        this._updateStyleMinSize(element, this.minWidth, this.minHeight);
                         // Move Actual Element
                         this._updateStylePositionSize(element,data.left, data.top, data.width, data.height);
                         // Calculate if allowed to Shrink
@@ -980,17 +826,6 @@ Element that enables any DOM element to be draggable and resizable.
                 - Number(computedStyle.paddingTop.replace("px", ""))
                 - Number(computedStyle.paddingBottom.replace("px", ""));
             //
-            // Returns True Width and Height including any borders, padding, margins etc.
-            //
-            // var iMarginWidth = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.marginRight.replace("px", ""))
-            //     + Number(computedStyle.borderLeftWidth.replace("px", "")) + Number(computedStyle.borderRightWidth.replace("px", ""))
-            //     + Number(computedStyle.paddingLeft.replace("px", "")) + Number(computedStyle.paddingRight.replace("px", ""));
-            // var iMarginHeight = Number(computedStyle.marginTop.replace("px", "")) + Number(computedStyle.marginBottom.replace("px", ""))
-            //     + Number(computedStyle.borderTopWidth.replace("px", "")) + Number(computedStyle.borderBottomWidth.replace("px", ""))
-            //     + Number(computedStyle.paddingTop.replace("px", "")) + Number(computedStyle.paddingBottom.replace("px", ""));
-            // results.width = element.clientWidth + iMarginWidth;
-            // results.height = element.clientHeight + iMarginHeight;
-            //
             // Returns True Left and Top
             //
             var iMarginLeft = Number(computedStyle.marginLeft.replace("px", "")) + Number(computedStyle.borderLeftWidth.replace("px", ""))
@@ -1046,7 +881,7 @@ Element that enables any DOM element to be draggable and resizable.
             }
             if (this.selectedElements.length === 1) {
                 // Fire Event Back - To update Property Editor
-
+                this.fire('edit-Element', this.selectedElements,"",this.coordsClicked);
             }
         }
         //
