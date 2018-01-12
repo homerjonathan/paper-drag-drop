@@ -282,6 +282,7 @@ Element that enables any DOM element to be draggable and resizable.
             this._Bind_EventContextMenu = this._EventContextMenu.bind(this);
             this._Bind_EventRefreshOverlays = this._EventRefreshOverlays.bind(this);
             this._Bind_EventRefocus = this._EventRefocus.bind(this);
+            this._Bind_EventKeys = this._EventKeys.bind(this);
         }
         /**
          *
@@ -339,12 +340,14 @@ Element that enables any DOM element to be draggable and resizable.
             document.addEventListener('contextmenu', this._Bind_EventContextMenu);
             document.addEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
             document.addEventListener('edit-Refocus', this._Bind_EventRefocus);
+            document.addEventListener('keydown', this._Bind_EventKeys);
         }
         _removeListeners() {
             document.removeEventListener('mousedown', this._Bind_EventMouseDown);
             document.removeEventListener('contextmenu', this._Bind_EventContextMenu);
             document.removeEventListener('edit-RefreshOverlays', this._Bind_EventRefreshOverlays);
             document.removeEventListener('edit-Refocus', this._Bind_EventRefocus);
+            document.removeEventListener('keydown', this._Bind_EventKeys);
         }
         /**
          * This method is used to show all or a subset of the resize handlers.
@@ -436,9 +439,9 @@ Element that enables any DOM element to be draggable and resizable.
                 // Calculate the real size of the node
                 var cr = this.getComputedStyleResults(elementNode);
                 // Update Overlay
-                this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.minWidth,cr.minHeight);
+                this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.styleMinWidth,cr.styleMinHeight);
                 // Update Data - Main value here is the Min Height and Width
-                this._updateGlyphPositionSize(element,data.left, data.top, cr.minWidth, cr.minHeight);
+                this._updateGlyphPositionSize(element,data.left, data.top, cr.minWidth,cr.minHeight);
                 //
                 // Fire Edit Element
                 //
@@ -539,9 +542,9 @@ Element that enables any DOM element to be draggable and resizable.
                         // Fix the Size
                         this._updateStyleMinSize(element,cr.minWidth,cr.minHeight);
                         // Resize the Overlay to fixed size
-                        this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.minWidth,cr.minHeight);
+                        this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.styleMinWidth,cr.styleMinHeight);
                         // Update Data Behind the Element configuration - Locking Min Width and Min Height
-                        this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth, cr.minHeight);
+                        this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth,cr.minHeight);
                     } else {
                         //
                         // Moving Object
@@ -555,9 +558,9 @@ Element that enables any DOM element to be draggable and resizable.
                         // Calculate if allowed to Shrink
                         var cr = this.getComputedStyleResults(elementNode);
                         // Resize the Overlay to fixed size
-                        this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.minWidth,cr.minHeight);
+                        this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.styleMinWidth,cr.styleMinHeight);
                         // Update Data Behind the Element configuration - Locking Min Width and Min Height
-                        this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth, cr.minHeight);
+                        this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth,cr.minHeight);
                     }
                 }
             }
@@ -817,14 +820,18 @@ Element that enables any DOM element to be draggable and resizable.
             //
             // Minimum Width, Height - Most HTML elements will only shrink so far.  So this returns that minimum
             //
-            results.minWidth = element.scrollWidth + Number(computedStyle.marginLeft.replace("px", ""))
+            results.minWidth = element.scrollWidth;
+            results.minHeight = element.scrollHeight;
+            results.styleMinWidth = element.scrollWidth
+                + Number(computedStyle.marginLeft.replace("px", ""))
                 + Number(computedStyle.marginRight.replace("px", ""))
-                - Number(computedStyle.paddingLeft.replace("px", ""))
-                - Number(computedStyle.paddingRight.replace("px", ""));
-            results.minHeight = element.scrollHeight + Number(computedStyle.marginTop.replace("px", ""))
+                + Number(computedStyle.paddingLeft.replace("px", ""))
+                + Number(computedStyle.paddingRight.replace("px", ""));
+            results.styleMinHeight = element.scrollHeight
+                + Number(computedStyle.marginTop.replace("px", ""))
                 + Number(computedStyle.marginBottom.replace("px", ""))
-                - Number(computedStyle.paddingTop.replace("px", ""))
-                - Number(computedStyle.paddingBottom.replace("px", ""));
+                + Number(computedStyle.paddingTop.replace("px", ""))
+                + Number(computedStyle.paddingBottom.replace("px", ""));
             //
             // Returns True Left and Top
             //
@@ -868,20 +875,20 @@ Element that enables any DOM element to be draggable and resizable.
                 if (element) {
                     // Element has been moved...
                     var data = { left: parseInt(element.style.left, 10),
-                                 top: parseInt(element.style.top, 10),
-                                 width: parseInt(element.style.width, 10),
-                                 height: parseInt(element.style.top, 10)};
+                        top: parseInt(element.style.top, 10),
+                        width: parseInt(element.style.width, 10),
+                        height: parseInt(element.style.top, 10)};
                     // Calculate the real size of the node
                     var cr = this.getComputedStyleResults(elementNode);
                     // Update Overlay
-                    this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.minWidth,cr.minHeight);
+                    this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.styleMinWidth,cr.styleMinHeight);
                     // Update Data - Main value here is the Min Height and Width
-                    this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth, cr.minHeight);
+                    this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth,cr.minHeight);
                 }
             }
             if (this.selectedElements.length === 1) {
                 // Fire Event Back - To update Property Editor
-                this.fire('edit-Element', this.selectedElements,"",this.coordsClicked);
+//                this.fire('edit-Element', this.selectedElements,"",this.coordsClicked);
             }
         }
         //
@@ -897,6 +904,23 @@ Element that enables any DOM element to be draggable and resizable.
                 });
             }
             this._EventRefreshOverlays();
+        }
+        //
+        // Process Key Events
+        //
+        _EventKeys(event) {
+            // Two events - ESC cancels selection.  CTRL-Z fires undo.
+            if (this.enable) {
+                var e = event || window.event;
+                if ((e.keyCode == 90) && (e.ctrlKey)) {
+                    // Ctrl - Z - Undo
+                    this.fire('edit-UndoStep', null);
+                } else if (e.keyCode == 27) {
+                    // Escape - Deselect
+                    this.selectedElements = [];
+                    this.fire('edit-Cancel');
+                }
+            }
         }
     }
     customElements.define(PaperDragDrop.is, PaperDragDrop);
