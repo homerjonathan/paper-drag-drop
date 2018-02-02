@@ -540,11 +540,11 @@ Element that enables any DOM element to be draggable and resizable.
                         // Calculate if allowed to Shrink
                         var cr = this.getComputedStyleResults(elementNode);
                         // Fix the Size
-                        this._updateStyleMinSize(element,cr.minWidth,cr.minHeight);
+                        this._updateStyleMinSize(element,cr.styleExcludeWidth,cr.styleExcludeHeight);
                         // Resize the Overlay to fixed size
                         this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.styleMinWidth,cr.styleMinHeight);
                         // Update Data Behind the Element configuration - Locking Min Width and Min Height
-                        this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth,cr.minHeight);
+                        this._updateGlyphPositionSize(element,data.left, data.top, cr.minWidth,cr.minHeight);
                     } else {
                         //
                         // Moving Object
@@ -560,7 +560,7 @@ Element that enables any DOM element to be draggable and resizable.
                         // Resize the Overlay to fixed size
                         this._updateStylePositionSize(overlay,cr.offsetLeft + data.left, cr.offsetTop + data.top,cr.styleMinWidth,cr.styleMinHeight);
                         // Update Data Behind the Element configuration - Locking Min Width and Min Height
-                        this._updateGlyphPositionSize(this.selectedElements[i].element,data.left, data.top, cr.minWidth,cr.minHeight);
+                        this._updateGlyphPositionSize(element,data.left, data.top, cr.minWidth,cr.minHeight);
                     }
                 }
             }
@@ -822,16 +822,25 @@ Element that enables any DOM element to be draggable and resizable.
             //
             results.minWidth = element.scrollWidth;
             results.minHeight = element.scrollHeight;
-            results.styleMinWidth = element.scrollWidth
-                + Number(computedStyle.marginLeft.replace("px", ""))
+            // Calculate Padding Margins and Widths of Borders that is the Real size of Object!
+            var overlapWidth = Number(computedStyle.marginLeft.replace("px", ""))
                 + Number(computedStyle.marginRight.replace("px", ""))
                 + Number(computedStyle.paddingLeft.replace("px", ""))
-                + Number(computedStyle.paddingRight.replace("px", ""));
-            results.styleMinHeight = element.scrollHeight
-                + Number(computedStyle.marginTop.replace("px", ""))
+                + Number(computedStyle.paddingRight.replace("px", ""))
+                + Number(computedStyle.borderLeftWidth.replace("px", ""))
+                + Number(computedStyle.borderRightWidth.replace("px", ""));
+            var overlapHeight = Number(computedStyle.marginTop.replace("px", ""))
                 + Number(computedStyle.marginBottom.replace("px", ""))
                 + Number(computedStyle.paddingTop.replace("px", ""))
-                + Number(computedStyle.paddingBottom.replace("px", ""));
+                + Number(computedStyle.paddingBottom.replace("px", ""))
+                + Number(computedStyle.borderTopWidth.replace("px", ""))
+                + Number(computedStyle.borderBottomWidth.replace("px", ""));
+            // Add To this object size so the overlay shows the true size of object
+            results.styleMinWidth = element.scrollWidth + overlapWidth;
+            results.styleMinHeight = element.scrollHeight + overlapHeight;
+            // Exclude so that this is not calculated twice for the element holding the object
+            results.styleExcludeWidth = element.scrollWidth - overlapWidth;
+            results.styleExcludeHeight = element.scrollHeight - overlapHeight;
             //
             // Returns True Left and Top
             //
