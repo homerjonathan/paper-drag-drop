@@ -404,8 +404,8 @@ Element that enables any DOM element to be draggable and resizable.
                     this.finishedDragging(e);
                     break;
             }
-            event.stopPropagation();
-            event.preventDefault();
+            e.stopPropagation();
+            e.preventDefault();
         }
         /**
          * Focus add Element to list of Elements selected
