@@ -817,30 +817,31 @@ Element that enables any DOM element to be draggable and resizable.
         getComputedStyleResults(element) {
             var computedStyle = this.getComputedStyle(element);
             var results = {};
-            //
-            // Minimum Width, Height - Most HTML elements will only shrink so far.  So this returns that minimum
-            //
-            results.minWidth = element.scrollWidth;
-            results.minHeight = element.scrollHeight;
+
             // Calculate Padding Margins and Widths of Borders that is the Real size of Object!
             var overlapWidth = Number(computedStyle.marginLeft.replace("px", ""))
                 + Number(computedStyle.marginRight.replace("px", ""))
                 + Number(computedStyle.paddingLeft.replace("px", ""))
-                + Number(computedStyle.paddingRight.replace("px", ""))
-                + Number(computedStyle.borderLeftWidth.replace("px", ""))
+                + Number(computedStyle.paddingRight.replace("px", ""));
+            var overlapWidthBorder = Number(computedStyle.borderLeftWidth.replace("px", ""))
                 + Number(computedStyle.borderRightWidth.replace("px", ""));
             var overlapHeight = Number(computedStyle.marginTop.replace("px", ""))
                 + Number(computedStyle.marginBottom.replace("px", ""))
                 + Number(computedStyle.paddingTop.replace("px", ""))
-                + Number(computedStyle.paddingBottom.replace("px", ""))
-                + Number(computedStyle.borderTopWidth.replace("px", ""))
+                + Number(computedStyle.paddingBottom.replace("px", ""));
+            var overlapHeightBorder = Number(computedStyle.borderTopWidth.replace("px", ""))
                 + Number(computedStyle.borderBottomWidth.replace("px", ""));
+            //
+            // Minimum Width, Height - Most HTML elements will only shrink so far.  So this returns that minimum
+            //
+            results.minWidth = element.scrollWidth - overlapWidth ;
+            results.minHeight = element.scrollHeight - overlapHeight;    
             // Add To this object size so the overlay shows the true size of object
-            results.styleMinWidth = element.scrollWidth + overlapWidth;
-            results.styleMinHeight = element.scrollHeight + overlapHeight;
+            results.styleMinWidth = element.scrollWidth + overlapWidth + overlapWidthBorder;
+            results.styleMinHeight = element.scrollHeight + overlapHeight + overlapHeightBorder;
             // Exclude so that this is not calculated twice for the element holding the object
-            results.styleExcludeWidth = element.scrollWidth - overlapWidth;
-            results.styleExcludeHeight = element.scrollHeight - overlapHeight;
+            results.styleExcludeWidth = element.scrollWidth - overlapWidth - overlapWidthBorder;
+            results.styleExcludeHeight = element.scrollHeight - overlapHeight - overlapHeightBorder;
             //
             // Returns True Left and Top
             //
