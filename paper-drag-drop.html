@@ -880,8 +880,8 @@ Element that enables any DOM element to be draggable and resizable.
         results.minWidth = element.scrollWidth - overlapWidth;
         results.minHeight = element.scrollHeight - overlapHeight;
       } else {
-        results.minWidth = element.scrollWidth;
-        results.minHeight = element.scrollHeight;
+        results.minWidth = element.scrollWidth + overlapWidthBorder;
+        results.minHeight = element.scrollHeight + overlapHeightBorder;
       }
       // Add To this object size so the overlay shows the true size of object
       results.styleMinWidth = element.scrollWidth + overlapWidth + overlapWidthBorder;
